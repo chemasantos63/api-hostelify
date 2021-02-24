@@ -7,9 +7,22 @@ import { ConfigService } from './config/config.service';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { RoleModule } from './modules/role/role.module';
+import { CustomerModule } from './modules/customer/customer.module';
+import { RoomModule } from './modules/room/room.module';
+import { RoomerModule } from './modules/roomer/roomer.module';
+import { ReservationModule } from './modules/reservation/reservation.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, UserModule, RoleModule],
+  imports: [
+    ConfigModule,
+    DatabaseModule,
+    UserModule,
+    RoleModule,
+    CustomerModule,
+    RoomModule,
+    RoomerModule,
+    ReservationModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
