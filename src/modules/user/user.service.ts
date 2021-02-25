@@ -1,4 +1,3 @@
-import { MapperService } from './../../shared/mapper.service';
 import {
   BadRequestException,
   Injectable,
@@ -17,10 +16,9 @@ export class UserService {
   constructor(
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
-    private readonly mapperService: MapperService,
   ) {}
 
-  async get(id: number): Promise<UserDto> {
+  async get(id: number): Promise<User> {
     if (!id) {
       throw new BadRequestException(`Id must be sent`);
     }
@@ -33,7 +31,7 @@ export class UserService {
       throw new NotFoundException(`User does not exits`);
     }
 
-    return this.mapperService.map<User, UserDto>(user, new UserDto());
+    return user;
   }
 
   async getAll(): Promise<User[]> {

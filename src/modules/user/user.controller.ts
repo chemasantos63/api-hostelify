@@ -9,8 +9,6 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { get } from 'http';
-import { UserDto } from './dto/user.dto';
 import { UserService } from './user.service';
 
 @Controller(`users`)
@@ -18,7 +16,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get(`:id`)
-  async getUser(@Param(`id`, ParseIntPipe) id: number): Promise<UserDto> {
+  async getUser(@Param(`id`, ParseIntPipe) id: number): Promise<User> {
     const user = await this.userService.get(id);
     return user;
   }
