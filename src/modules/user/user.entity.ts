@@ -10,14 +10,16 @@ import {
   ManyToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 @Entity(`users`)
+@Unique(['username'])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn(`increment`)
   id: number;
 
-  @Column({ type: `varchar`, unique: true, length: 30, nullable: false })
+  @Column({ type: `varchar`, length: 30, nullable: false })
   username: string;
 
   @Column({ type: `varchar`, nullable: false })
@@ -25,6 +27,9 @@ export class User extends BaseEntity {
 
   @Column({ type: `varchar`, nullable: false })
   password: string;
+
+  @Column({ type: 'varchar', nullable: false })
+  salt: string;
 
   @OneToOne((type) => UserDetails, {
     cascade: true,

@@ -11,6 +11,7 @@ import { CustomerModule } from './modules/customer/customer.module';
 import { RoomModule } from './modules/room/room.module';
 import { RoomerModule } from './modules/roomer/roomer.module';
 import { ReservationModule } from './modules/reservation/reservation.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ReservationModule } from './modules/reservation/reservation.module';
     RoomModule,
     RoomerModule,
     ReservationModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

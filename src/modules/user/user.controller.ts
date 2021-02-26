@@ -8,8 +8,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller(`users`)
 export class UserController {
@@ -21,6 +23,7 @@ export class UserController {
     return user;
   }
 
+  @UseGuards(AuthGuard('myJwtStrategy'))
   @Get()
   async getUsers(): Promise<User[]> {
     const users = await this.userService.getAll();
