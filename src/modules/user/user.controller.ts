@@ -23,7 +23,7 @@ export class UserController {
     return user;
   }
 
-  @UseGuards(AuthGuard('myJwtStrategy'))
+  @UseGuards(AuthGuard())
   @Get()
   async getUsers(): Promise<User[]> {
     const users = await this.userService.getAll();
