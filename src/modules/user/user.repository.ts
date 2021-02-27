@@ -12,7 +12,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { BadRequestException } from '@nestjs/common';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -79,22 +78,12 @@ export class UserRepository extends Repository<User> {
   }
 
   async inactivateUser(id: number): Promise<void> {
-    const userExists: User = await this.findOne(id, {
-      where: { status: `ACTIVE` },
-    });
-
-    if (!userExists) {
-      throw new NotFoundException(`User does not exists`);
-    }
+    await this.findUserById(id);
 
     await this.update(id, { status: `INACTIVE` });
   }
 
   async findUserById(id: number): Promise<User> {
-    if (!id) {
-      throw new BadRequestException(`Id must be sent`);
-    }
-
     const user: User = await this.findOne(id, {
       where: { status: `ACTIVE` },
     });
@@ -108,5 +97,9 @@ export class UserRepository extends Repository<User> {
 
   private async hashPassword(password: string, salt: string): Promise<string> {
     return hash(password, salt);
+  }
+
+  async setRoleToUser(userId: number, roleId: number): Promise<void> {
+    const user = await this.findUserById(userId);
   }
 }

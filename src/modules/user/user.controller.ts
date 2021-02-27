@@ -1,5 +1,6 @@
 import { User } from './user.entity';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -25,6 +26,10 @@ export class UserController {
   @Get(`:id`)
   @TransformClassToPlain()
   async getUser(@Param(`id`, ParseIntPipe) id: number): Promise<User> {
+    if (!id) {
+      throw new BadRequestException(`Id must be sent`);
+    }
+
     const user = await this.userService.get(id);
     return user;
   }
@@ -49,6 +54,7 @@ export class UserController {
     @Param(`id`, ParseIntPipe) id: number,
     @Body() user: User,
   ): Promise<void> {
+    await this.userService.get(id);
     const updatedUser = await this.userService.updateUser(id, user);
     return updatedUser;
   }
