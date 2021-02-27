@@ -9,30 +9,38 @@ import {
   Patch,
   Post,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
+import { UserDto } from './dto/user.dto';
+import { TransformClassToPlain } from 'class-transformer';
 
+@UseGuards(AuthGuard())
 @Controller(`users`)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get(`:id`)
+  @TransformClassToPlain()
   async getUser(@Param(`id`, ParseIntPipe) id: number): Promise<User> {
     const user = await this.userService.get(id);
     return user;
   }
 
-  @UseGuards(AuthGuard())
   @Get()
+  @TransformClassToPlain()
   async getUsers(): Promise<User[]> {
     const users = await this.userService.getAll();
     return users;
   }
 
   @Post()
-  async createUser(@Body() user: User): Promise<User> {
-    const createdUser = await this.userService.createUser(user);
+  @TransformClassToPlain()
+  @UsePipes(ValidationPipe)
+  async createUser(@Body() userDto: UserDto): Promise<User> {
+    const createdUser = await this.userService.createUser(userDto);
     return createdUser;
   }
 

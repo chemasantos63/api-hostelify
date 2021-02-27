@@ -13,6 +13,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 @Entity(`users`)
 @Unique(['username'])
 export class User extends BaseEntity {
@@ -26,9 +27,11 @@ export class User extends BaseEntity {
   email: string;
 
   @Column({ type: `varchar`, nullable: false })
+  @Exclude()
   password: string;
 
   @Column({ type: 'varchar', nullable: false })
+  @Exclude()
   salt: string;
 
   @OneToOne((type) => UserDetails, {

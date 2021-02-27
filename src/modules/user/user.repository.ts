@@ -1,3 +1,4 @@
+import { UserDto } from './dto/user.dto';
 import { Role } from './../role/role.entity';
 import { RoleRepository } from './../role/role.repository';
 import { SignupDto } from './../auth/dto/signup.dto';
@@ -9,7 +10,9 @@ import { UserDetails } from './user.details.entity';
 import {
   ConflictException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -44,6 +47,63 @@ export class UserRepository extends Repository<User> {
         throw new InternalServerErrorException();
       }
     }
+  }
+
+  async createUser(userDto: UserDto): Promise<User> {
+    const { username, email, password } = userDto;
+
+    const user = new User();
+
+    user.username = username;
+    user.email = email;
+    const salt = await genSalt(10);
+    user.salt = salt;
+    user.password = await this.hashPassword(password, salt);
+
+    const repo = getConnection().getRepository(Role);
+    const defaultRole = await repo.findOne({ where: { name: `GENERAL` } });
+    user.roles = [defaultRole];
+
+    const details = new UserDetails();
+    user.details = details;
+
+    await user.save();
+
+    return user;
+  }
+
+  async getAllActiveUsers(): Promise<User[]> {
+    return await this.find({
+      where: { status: `ACTIVE` },
+    });
+  }
+
+  async inactivateUser(id: number): Promise<void> {
+    const userExists: User = await this.findOne(id, {
+      where: { status: `ACTIVE` },
+    });
+
+    if (!userExists) {
+      throw new NotFoundException(`User does not exists`);
+    }
+
+    await this.update(id, { status: `INACTIVE` });
+  }
+
+  async findUserById(id: number): Promise<User> {
+    if (!id) {
+      throw new BadRequestException(`Id must be sent`);
+    }
+
+    const user: User = await this.findOne(id, {
+      where: { status: `ACTIVE` },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User does not exits`);
+    }
+
+    return user;
   }
 
   private async hashPassword(password: string, salt: string): Promise<string> {
