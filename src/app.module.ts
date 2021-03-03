@@ -12,6 +12,7 @@ import { RoomModule } from './modules/room/room.module';
 import { RoomerModule } from './modules/roomer/roomer.module';
 import { ReservationModule } from './modules/reservation/reservation.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ReservationController } from './reservation/reservation.controller';
 
 @Module({
   imports: [

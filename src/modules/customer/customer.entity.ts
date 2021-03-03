@@ -11,7 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Reservation } from '../reservation/reservation.entity';
+import { Reservation } from '../reservation/entities/reservation.entity';
 import { CustomerType } from './customer.types.entity';
 
 @Entity(`customers`)
