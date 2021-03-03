@@ -18,8 +18,11 @@ export class Reservation extends BaseEntity {
   @PrimaryGeneratedColumn(`increment`)
   id: number;
 
-  @Column({ type: `int`, unique: true, nullable: false })
-  from: Date;
+  @Column({ type: `date`, unique: true, nullable: false })
+  fromDate: Date;
+
+  @Column({ type: `date`, unique: true, nullable: false })
+  toDate: Date;
 
   @OneToOne(() => Customer, {
     cascade: true,
