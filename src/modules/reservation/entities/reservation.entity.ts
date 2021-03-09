@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Customer } from '../../customer/customer.entity';
+import { Customer } from '../../customer/entities/customer.entity';
 import { Room } from '../../room/room.entity';
 
 @Entity(`reservations`)

@@ -4,14 +4,13 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Reservation } from '../reservation/entities/reservation.entity';
+import { Reservation } from '../../reservation/entities/reservation.entity';
 import { CustomerType } from './customer.types.entity';
 
 @Entity(`customers`)
@@ -34,7 +33,7 @@ export class Customer extends BaseEntity {
   @Column({ type: `varchar`, unique: false, length: 30, nullable: false })
   email: string;
 
-  @OneToOne(() => CustomerType, {
+  @ManyToOne(() => CustomerType, (customerType) => customerType.customers, {
     cascade: true,
     nullable: false,
     eager: true,
@@ -44,6 +43,9 @@ export class Customer extends BaseEntity {
 
   @OneToMany(() => Reservation, (reservation) => reservation.customer)
   reservations: Reservation[];
+
+  @Column({ type: `varchar`, nullable: false, default: 'active' })
+  status: string;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

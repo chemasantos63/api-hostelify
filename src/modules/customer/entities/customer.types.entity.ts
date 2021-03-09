@@ -3,13 +3,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Customer } from './customer.entity';
 
 @Entity(`customer_types`)
 export class CustomerType extends BaseEntity {
@@ -18,6 +15,8 @@ export class CustomerType extends BaseEntity {
 
   @Column({ type: `varchar`, unique: true, length: 15, nullable: false })
   type: string;
+
+  customers: Customer[];
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

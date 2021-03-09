@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { TransformClassToPlain } from 'class-transformer';
-import { Customer } from '../customer/customer.entity';
+import { Customer } from '../customer/entities/customer.entity';
 import { Room } from '../room/room.entity';
 import { CreateReservationDto } from './dto/create-reservation.input';
 import { Reservation } from './entities/reservation.entity';
