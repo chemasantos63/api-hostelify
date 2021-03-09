@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -30,6 +31,14 @@ export class CustomerController {
     return customers;
   }
 
+  @Get(`:id`)
+  @TransformClassToPlain()
+  async getCustomer(@Param(`id`, ParseIntPipe) id: number): Promise<Customer> {
+    const customer = await this.customerService.get(id);
+
+    return customer;
+  }
+
   @Post()
   @TransformClassToPlain()
   @UsePipes(ValidationPipe)
@@ -50,5 +59,11 @@ export class CustomerController {
     @Param(`id`, ParseIntPipe) id: number,
   ): Promise<void> {
     return this.customerService.updateCustomer(id, updateCustomerDto);
+  }
+
+  @Delete(`:id`)
+  async deleteUser(@Param(`id`, ParseIntPipe) id: number): Promise<boolean> {
+    await this.customerService.deleteCustomer(id);
+    return true;
   }
 }

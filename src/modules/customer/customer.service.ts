@@ -14,11 +14,17 @@ export class CustomerService {
   ) {}
 
   async getAll(): Promise<Customer[]> {
-    return await this.customerRepository.find();
+    return await this.customerRepository.find({ where: { status: `active` } });
   }
 
   async get(id: number): Promise<Customer> {
-    return await this.customerRepository.findOneOrFail(id);
+    const customer = await this.customerRepository.findOne(id, {
+      where: { status: `active` },
+    });
+    if (!customer) {
+      throw new NotFoundException(`Customer does not exits`);
+    }
+    return customer;
   }
 
   async createCustomer(
@@ -69,16 +75,20 @@ export class CustomerService {
 
     const customer = await this.get(id);
 
-    if (!customer) {
-      throw new NotFoundException(`Customer does not exists`);
-    }
-
     customer.name = name;
     customer.lastname = lastname;
     customer.email = email;
     customer.documentNumber = documentNumber;
     customer.phone = phone;
     customer.type = customerType;
+
+    await this.customerRepository.update(id, customer);
+  }
+
+  async deleteCustomer(id: number): Promise<void> {
+    const customer = await this.get(id);
+
+    customer.status = `inactive`;
 
     await this.customerRepository.update(id, customer);
   }
