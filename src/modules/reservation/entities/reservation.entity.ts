@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Customer } from '../../customer/entities/customer.entity';
-import { Room } from '../../room/room.entity';
+import { Room } from '../../room/entities/room.entity';
 
 @Entity(`reservations`)
 export class Reservation extends BaseEntity {

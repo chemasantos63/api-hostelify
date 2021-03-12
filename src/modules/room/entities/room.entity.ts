@@ -20,8 +20,15 @@ export class Room extends BaseEntity {
   @Column({ type: `varchar`, unique: false, length: 60, nullable: true })
   location: string;
 
-  @ManyToOne(() => RoomType, (roomType) => roomType.rooms)
+  @ManyToOne(() => RoomType, (roomType) => roomType.rooms, {
+    cascade: true,
+    nullable: false,
+    eager: true,
+  })
   type: RoomType;
+
+  @Column({ type: `varchar`, nullable: false, default: 'active' })
+  status: string;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;
