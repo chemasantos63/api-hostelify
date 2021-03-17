@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
   UsePipes,
@@ -12,6 +14,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { TransformClassToPlain } from 'class-transformer';
 import { CreateRoomDto } from '../dto/create-room-input';
+import { UpdateRoomDto } from '../dto/update-room-input';
 import { Room } from '../entities/room.entity';
 import { RoomService } from '../services/room.service';
 
@@ -43,19 +46,19 @@ export class RoomController {
     return createdRoom;
   }
 
-  //   @Patch(`:id`)
-  //   @TransformClassToPlain()
-  //   @UsePipes(ValidationPipe)
-  //   async updateCustomer(
-  //     @Body() updateCustomerDto: UpdateCustomerDto,
-  //     @Param(`id`, ParseIntPipe) id: number,
-  //   ): Promise<void> {
-  //     return this.customerService.updateCustomer(id, updateCustomerDto);
-  //   }
+  @Patch(`:id`)
+  @TransformClassToPlain()
+  @UsePipes(ValidationPipe)
+  async updateCustomer(
+    @Body() updateRoomDto: UpdateRoomDto,
+    @Param(`id`, ParseIntPipe) id: number,
+  ): Promise<void> {
+    return this.roomService.updateRoom(id, updateRoomDto);
+  }
 
-  //   @Delete(`:id`)
-  //   async deleteUser(@Param(`id`, ParseIntPipe) id: number): Promise<boolean> {
-  //     await this.customerService.deleteCustomer(id);
-  //     return true;
-  //   }
+  @Delete(`:id`)
+  async deleteUser(@Param(`id`, ParseIntPipe) id: number): Promise<boolean> {
+    await this.roomService.deleteRoom(id);
+    return true;
+  }
 }

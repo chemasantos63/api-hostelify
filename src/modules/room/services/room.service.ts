@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Room } from '../entities/room.entity';
 import { RoomRepository } from '../repositories/room.repository';
 import { RoomTypeRepository } from '../repositories/room.types.repository';
+import { UpdateRoomDto } from '../dto/update-room-input';
 
 @Injectable()
 export class RoomService {
@@ -12,7 +13,11 @@ export class RoomService {
   ) {}
 
   async getAll(): Promise<Room[]> {
-    return await this.roomRepository.find({});
+    return await this.roomRepository.find({ where: { status: `active` } });
+  }
+
+  async getByIds(roomIds: number[]): Promise<Room[]> {
+    return await this.roomRepository.findByIds(roomIds);
   }
 
   async get(id: number): Promise<Room> {
@@ -35,5 +40,25 @@ export class RoomService {
     room.type = await this.roomTypeRepository.findOne({ id: roomTypeId });
 
     return await room.save();
+  }
+
+  async updateRoom(id: number, updateRoomDto: UpdateRoomDto): Promise<void> {
+    const { roomNumber, roomTypeId, location } = updateRoomDto;
+
+    const room = await this.get(id);
+
+    room.roomNumber = roomNumber;
+    room.location = location;
+    room.type = await this.roomTypeRepository.findOne({ id: roomTypeId });
+
+    await room.save();
+  }
+
+  async deleteRoom(id: number): Promise<void> {
+    const room = await this.get(id);
+
+    room.status = `inactive`;
+
+    await this.roomRepository.update(id, room);
   }
 }

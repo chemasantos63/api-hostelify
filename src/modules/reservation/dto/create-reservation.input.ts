@@ -13,5 +13,5 @@ export class CreateReservationDto {
   customerId: number;
 
   @IsNotEmpty()
-  rooms: [number];
+  roomIds: [number];
 }

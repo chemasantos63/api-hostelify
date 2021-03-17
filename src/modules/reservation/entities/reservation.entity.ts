@@ -6,7 +6,7 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -24,7 +24,7 @@ export class Reservation extends BaseEntity {
   @Column({ type: `date`, unique: true, nullable: false })
   toDate: Date;
 
-  @OneToOne(() => Customer, {
+  @ManyToOne(() => Customer, {
     cascade: true,
     nullable: false,
     eager: true,
@@ -32,9 +32,12 @@ export class Reservation extends BaseEntity {
   @JoinColumn({ name: `customer_id` })
   customer: Customer;
 
-  @ManyToMany(() => Room)
+  @ManyToMany(() => Room, { cascade: true, nullable: false, eager: true })
   @JoinTable({ name: `reservations_rooms` })
   rooms: Room[];
+
+  @Column({ type: `varchar`, nullable: false, default: 'active' })
+  status: string;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

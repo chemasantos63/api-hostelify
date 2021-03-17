@@ -11,8 +11,6 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { TransformClassToPlain } from 'class-transformer';
-import { Customer } from '../customer/entities/customer.entity';
-import { Room } from '../room/entities/room.entity';
 import { CreateReservationDto } from './dto/create-reservation.input';
 import { Reservation } from './entities/reservation.entity';
 import { ReservationService } from './reservation.service';
@@ -26,13 +24,12 @@ export class ReservationController {
   async getReservationById(
     @Param(`id`, ParseIntPipe) id: number,
   ): Promise<Reservation> {
-    console.log(id);
-    return new Reservation();
+    return await this.reservationService.get(id);
   }
 
   @Get()
   async getAllReservations(): Promise<Reservation[]> {
-    return [new Reservation()];
+    return await this.reservationService.getAll();
   }
 
   @Post()
@@ -41,12 +38,8 @@ export class ReservationController {
   async createReservation(
     @Body() createReservationDto: CreateReservationDto,
   ): Promise<Reservation> {
-    const { fromDate, toDate, customerId, rooms } = createReservationDto;
-    const reservation = new Reservation();
-    reservation.fromDate = fromDate;
-    reservation.toDate = toDate;
-    reservation.customer = new Customer();
-    reservation.rooms = [new Room()];
-    return reservation;
+    return await this.reservationService.createReservation(
+      createReservationDto,
+    );
   }
 }
