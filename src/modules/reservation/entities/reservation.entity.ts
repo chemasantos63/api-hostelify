@@ -18,10 +18,10 @@ export class Reservation extends BaseEntity {
   @PrimaryGeneratedColumn(`increment`)
   id: number;
 
-  @Column({ type: `date`, unique: true, nullable: false })
+  @Column({ type: `date`, nullable: false })
   fromDate: Date;
 
-  @Column({ type: `date`, unique: true, nullable: false })
+  @Column({ type: `date`, nullable: false })
   toDate: Date;
 
   @ManyToOne(() => Customer, {

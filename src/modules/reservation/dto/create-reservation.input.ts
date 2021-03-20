@@ -1,12 +1,10 @@
-import { IsDateString, IsNotEmpty } from 'class-validator';
+import { IsDate, IsDateString, IsNotEmpty } from 'class-validator';
 
 export class CreateReservationDto {
-  @IsNotEmpty()
-  @IsDateString()
+  @IsDate()
   fromDate: Date;
 
-  @IsNotEmpty()
-  @IsDateString()
+  @IsDate()
   toDate: Date;
 
   @IsNotEmpty()
