@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { RoomStatus } from './room.status.entity';
 import { RoomType } from './room.types.entity';
 
 @Entity(`rooms`)
@@ -27,8 +28,12 @@ export class Room extends BaseEntity {
   })
   type: RoomType;
 
-  @Column({ type: `varchar`, nullable: false, default: 'active' })
-  status: string;
+  @ManyToOne(() => RoomStatus, (roomStatus) => roomStatus.rooms, {
+    cascade: true,
+    nullable: false,
+    eager: true,
+  })
+  status: RoomStatus;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

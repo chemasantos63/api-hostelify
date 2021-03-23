@@ -1,3 +1,4 @@
+import { RoomStatusRepository } from './repositories/room.status.repository';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
@@ -11,7 +12,11 @@ import { RoomTypeService } from './services/room.type.service';
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([RoomRepository, RoomTypeRepository]),
+    TypeOrmModule.forFeature([
+      RoomRepository,
+      RoomTypeRepository,
+      RoomStatusRepository,
+    ]),
   ],
   providers: [RoomService, RoomTypeService],
   controllers: [RoomController, RoomTypeController],

@@ -4,16 +4,25 @@ import { Room } from '../entities/room.entity';
 import { RoomRepository } from '../repositories/room.repository';
 import { RoomTypeRepository } from '../repositories/room.types.repository';
 import { UpdateRoomDto } from '../dto/update-room-input';
+import { RoomStatusRepository } from '../repositories/room.status.repository';
+import { Not } from 'typeorm';
 
 @Injectable()
 export class RoomService {
   constructor(
     private readonly roomRepository: RoomRepository,
     private readonly roomTypeRepository: RoomTypeRepository,
+    private readonly roomStatusRepository: RoomStatusRepository,
   ) {}
 
   async getAll(): Promise<Room[]> {
-    return await this.roomRepository.find({ where: { status: `active` } });
+    const inactiveRoomStatus = await this.roomStatusRepository.findOne({
+      where: { description: 'Inactiva' },
+    });
+
+    return await this.roomRepository.find({
+      status: { id: Not(inactiveRoomStatus.id) },
+    });
   }
 
   async getByIds(roomIds: number[]): Promise<Room[]> {
@@ -21,12 +30,18 @@ export class RoomService {
   }
 
   async get(id: number): Promise<Room> {
-    const room = await this.roomRepository.findOne(id, {
-      where: { status: `active` },
+    const inactiveRoomStatus = await this.roomStatusRepository.findOne({
+      where: { description: 'Inactiva' },
     });
+
+    const room = await this.roomRepository.findOne(id, {
+      where: { status: { id: Not(inactiveRoomStatus.id) } },
+    });
+
     if (!room) {
       throw new NotFoundException(`Room does not exits`);
     }
+
     return room;
   }
 
@@ -38,6 +53,9 @@ export class RoomService {
     room.roomNumber = roomNumber;
     room.location = location;
     room.type = await this.roomTypeRepository.findOne({ id: roomTypeId });
+    room.status = await this.roomStatusRepository.findOne({
+      description: `Activa`,
+    });
 
     return await room.save();
   }
@@ -57,7 +75,9 @@ export class RoomService {
   async deleteRoom(id: number): Promise<void> {
     const room = await this.get(id);
 
-    room.status = `inactive`;
+    room.status = await this.roomStatusRepository.findOne({
+      description: `Inactiva`,
+    });
 
     await this.roomRepository.update(id, room);
   }

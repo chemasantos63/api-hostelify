@@ -5,6 +5,7 @@ import { CustomerRepository } from '../customer/customer.repository';
 import { CustomerService } from '../customer/customer.service';
 import { CustomerTypesRepository } from '../customer/customer.types.repository';
 import { RoomRepository } from '../room/repositories/room.repository';
+import { RoomStatusRepository } from '../room/repositories/room.status.repository';
 import { RoomTypeRepository } from '../room/repositories/room.types.repository';
 import { RoomService } from '../room/services/room.service';
 import { ReservationController } from './reservation.controller';
@@ -20,6 +21,7 @@ import { ReservationService } from './reservation.service';
       RoomRepository,
       CustomerTypesRepository,
       RoomTypeRepository,
+      RoomStatusRepository,
     ]),
   ],
   controllers: [ReservationController],
