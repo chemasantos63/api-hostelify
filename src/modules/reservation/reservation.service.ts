@@ -32,7 +32,13 @@ export class ReservationService {
   async createReservation(
     createReservationDto: CreateReservationDto,
   ): Promise<Reservation> {
-    const { fromDate, toDate, customerId, roomIds } = createReservationDto;
+    const {
+      fromDate,
+      toDate,
+      customerId,
+      roomIds,
+      roomersQty,
+    } = createReservationDto;
 
     const customer = await this.customerService.get(customerId);
 
@@ -43,6 +49,7 @@ export class ReservationService {
     reservation.toDate = toDate;
     reservation.customer = customer;
     reservation.rooms = rooms;
+    reservation.roomersQty = roomersQty;
 
     return await reservation.save();
   }

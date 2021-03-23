@@ -39,6 +39,9 @@ export class Reservation extends BaseEntity {
   @Column({ type: `varchar`, nullable: false, default: 'active' })
   status: string;
 
+  @Column({ type: `varchar`, nullable: false })
+  roomersQty: string;
+
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;
 
