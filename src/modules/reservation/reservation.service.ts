@@ -82,10 +82,8 @@ export class ReservationService {
   }
 
   async deleteReservation(id: number): Promise<void> {
-    const reservation = await this.get(id);
+    await this.get(id);
 
-    reservation.status = `inactive`;
-
-    await this.reservationRepository.update(id, reservation);
+    await this.reservationRepository.delete(id);
   }
 }
