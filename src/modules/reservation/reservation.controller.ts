@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
   UsePipes,
@@ -12,6 +14,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { TransformClassToPlain } from 'class-transformer';
 import { CreateReservationDto } from './dto/create-reservation.input';
+import { UpdateReservationDto } from './dto/update-reservation.input';
 import { Reservation } from './entities/reservation.entity';
 import { ReservationService } from './reservation.service';
 
@@ -41,5 +44,23 @@ export class ReservationController {
     return await this.reservationService.createReservation(
       createReservationDto,
     );
+  }
+
+  @Patch(`:id`)
+  @TransformClassToPlain()
+  @UsePipes(ValidationPipe)
+  async updateCustomer(
+    @Body() updateReservationDto: UpdateReservationDto,
+    @Param(`id`, ParseIntPipe) id: number,
+  ): Promise<void> {
+    return this.reservationService.updateReservation(id, updateReservationDto);
+  }
+
+  @Delete(`:id`)
+  async deleteReservation(
+    @Param(`id`, ParseIntPipe) id: number,
+  ): Promise<boolean> {
+    await this.reservationService.deleteReservation(id);
+    return true;
   }
 }

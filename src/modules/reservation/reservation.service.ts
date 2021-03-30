@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CustomerService } from '../customer/customer.service';
 import { RoomService } from '../room/services/room.service';
 import { CreateReservationDto } from './dto/create-reservation.input';
+import { UpdateReservationDto } from './dto/update-reservation.input';
 import { Reservation } from './entities/reservation.entity';
 import { ReservationRepository } from './reservation.repository';
 
@@ -52,5 +53,39 @@ export class ReservationService {
     reservation.roomersQty = roomersQty;
 
     return await reservation.save();
+  }
+
+  async updateReservation(
+    id: number,
+    updateReservationDto: UpdateReservationDto,
+  ): Promise<void> {
+    const {
+      fromDate,
+      toDate,
+      customerId,
+      roomIds,
+      roomersQty,
+    } = updateReservationDto;
+
+    const reservation = await this.get(id);
+
+    const customer = await this.customerService.get(customerId);
+    const rooms = await this.roomService.getByIds(roomIds);
+
+    reservation.fromDate = fromDate;
+    reservation.toDate = toDate;
+    reservation.customer = customer;
+    reservation.rooms = rooms;
+    reservation.roomersQty = roomersQty;
+
+    await reservation.save();
+  }
+
+  async deleteReservation(id: number): Promise<void> {
+    const reservation = await this.get(id);
+
+    reservation.status = `inactive`;
+
+    await this.reservationRepository.update(id, reservation);
   }
 }

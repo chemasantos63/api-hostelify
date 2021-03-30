@@ -1,19 +1,18 @@
-import { IsDateString, IsNotEmpty } from 'class-validator';
+import { IsDate, IsNotEmpty } from 'class-validator';
 
 export class UpdateReservationDto {
-  @IsNotEmpty()
-  @IsDateString()
+  @IsDate()
   fromDate: Date;
 
-  @IsNotEmpty()
-  @IsDateString()
+  @IsDate()
   toDate: Date;
 
   @IsNotEmpty()
   customerId: number;
 
   @IsNotEmpty()
-  roomId: number;
+  roomIds: [number];
 
-  permanenceId: number;
+  @IsNotEmpty()
+  roomersQty: string;
 }

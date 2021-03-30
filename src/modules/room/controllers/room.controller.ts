@@ -32,7 +32,7 @@ export class RoomController {
 
   @Get(`:id`)
   @TransformClassToPlain()
-  async getCustomer(@Param(`id`, ParseIntPipe) id: number): Promise<Room> {
+  async getRoom(@Param(`id`, ParseIntPipe) id: number): Promise<Room> {
     const room = await this.roomService.get(id);
 
     return room;
@@ -41,7 +41,7 @@ export class RoomController {
   @Post()
   @TransformClassToPlain()
   @UsePipes(ValidationPipe)
-  async createCustomer(@Body() createRoomDto: CreateRoomDto): Promise<Room> {
+  async createRoom(@Body() createRoomDto: CreateRoomDto): Promise<Room> {
     const createdRoom = await this.roomService.createRoom(createRoomDto);
     return createdRoom;
   }
@@ -49,7 +49,7 @@ export class RoomController {
   @Patch(`:id`)
   @TransformClassToPlain()
   @UsePipes(ValidationPipe)
-  async updateCustomer(
+  async updateRoom(
     @Body() updateRoomDto: UpdateRoomDto,
     @Param(`id`, ParseIntPipe) id: number,
   ): Promise<void> {
@@ -57,7 +57,7 @@ export class RoomController {
   }
 
   @Delete(`:id`)
-  async deleteUser(@Param(`id`, ParseIntPipe) id: number): Promise<boolean> {
+  async deleteRoom(@Param(`id`, ParseIntPipe) id: number): Promise<boolean> {
     await this.roomService.deleteRoom(id);
     return true;
   }
