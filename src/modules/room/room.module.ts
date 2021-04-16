@@ -8,6 +8,8 @@ import { RoomService } from './services/room.service';
 import { RoomController } from './controllers/room.controller';
 import { RoomTypeController } from './controllers/room.type.controller';
 import { RoomTypeService } from './services/room.type.service';
+import { RoomStatusService } from './services/room.status.service';
+import { RoomStatusController } from './controllers/room.status.controller';
 
 @Module({
   imports: [
@@ -18,7 +20,7 @@ import { RoomTypeService } from './services/room.type.service';
       RoomStatusRepository,
     ]),
   ],
-  providers: [RoomService, RoomTypeService],
-  controllers: [RoomController, RoomTypeController],
+  providers: [RoomService, RoomTypeService, RoomStatusService],
+  controllers: [RoomController, RoomTypeController, RoomStatusController],
 })
 export class RoomModule {}

@@ -8,12 +8,14 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { Permanence } from '../permanence/entities/permanence.entity';
 @Entity(`users`)
 @Unique(['username'])
 export class User extends BaseEntity {
@@ -45,6 +47,12 @@ export class User extends BaseEntity {
   @ManyToMany((type) => Role, (role) => role.users, { eager: true })
   @JoinTable({ name: 'user_roles' })
   roles: Role[];
+
+  @OneToMany(() => Permanence, (permanence) => permanence.userCheckIn)
+  permanencesIn: Permanence[];
+
+  @OneToMany(() => Permanence, (permanence) => permanence.userCheckOut)
+  permanencesOut: Permanence[];
 
   @Column({ type: `varchar`, default: `ACTIVE`, length: 8 })
   status: string;

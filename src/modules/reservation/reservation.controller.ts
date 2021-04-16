@@ -23,6 +23,11 @@ import { ReservationService } from './reservation.service';
 export class ReservationController {
   constructor(private readonly reservationService: ReservationService) {}
 
+  @Get(`today`)
+  async getTodayReservations(): Promise<Reservation[]> {
+    return await this.reservationService.getTodayReservations();
+  }
+
   @Get(`:id`)
   async getReservationById(
     @Param(`id`, ParseIntPipe) id: number,

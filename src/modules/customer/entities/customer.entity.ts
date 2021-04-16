@@ -1,3 +1,4 @@
+import { Permanence } from '../../permanence/entities/permanence.entity';
 import {
   BaseEntity,
   Column,
@@ -43,6 +44,9 @@ export class Customer extends BaseEntity {
 
   @OneToMany(() => Reservation, (reservation) => reservation.customer)
   reservations: Reservation[];
+
+  @OneToMany(() => Permanence, (permanence) => permanence.customer)
+  permanences: Permanence[];
 
   @Column({ type: `varchar`, nullable: false, default: 'active' })
   status: string;

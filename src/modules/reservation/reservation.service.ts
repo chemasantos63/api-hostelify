@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Raw } from 'typeorm';
 import { CustomerService } from '../customer/customer.service';
 import { RoomService } from '../room/services/room.service';
 import { CreateReservationDto } from './dto/create-reservation.input';
@@ -17,6 +18,12 @@ export class ReservationService {
   async getAll(): Promise<Reservation[]> {
     return await this.reservationRepository.find({
       where: { status: `active` },
+    });
+  }
+
+  async getTodayReservations(): Promise<Reservation[]> {
+    return await this.reservationRepository.find({
+      fromDate: Raw((d) => `${d} = current_date`),
     });
   }
 
