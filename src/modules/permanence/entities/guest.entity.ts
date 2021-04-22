@@ -3,6 +3,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -22,6 +24,9 @@ export class Guest extends BaseEntity {
   @Column({ type: `varchar`, unique: false, length: 20, nullable: false })
   nationality: string;
 
+  @Column({ type: `varchar`, unique: true, length: 40, nullable: false })
+  identification: string;
+
   @Column({ type: `varchar`, unique: false, length: 20, nullable: false })
   origin: string;
 
@@ -34,6 +39,7 @@ export class Guest extends BaseEntity {
   @Column({ type: `varchar`, unique: false, length: 20, nullable: false })
   phone: string;
 
+  @ManyToMany(() => Permanence, (permanence) => permanence.guest)
   permanences: Permanence[];
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })

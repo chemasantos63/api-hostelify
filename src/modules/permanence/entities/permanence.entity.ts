@@ -59,7 +59,11 @@ export class Permanence extends BaseEntity {
   @JoinColumn({ name: `userCheckOut_id` })
   userCheckOut: User;
 
-  @ManyToMany(() => Guest, { cascade: true, nullable: false, eager: true })
+  @ManyToMany(() => Guest, (guest) => guest.permanences, {
+    cascade: true,
+    nullable: false,
+    eager: true,
+  })
   @JoinTable({ name: `permanences_guest` })
   guest: Guest[];
 
