@@ -49,6 +49,6 @@ export class PermanenceController {
       user,
     );
 
-    return permanence.save();
+    return permanence;
   }
 }
