@@ -27,28 +27,7 @@ export class GuestService {
   }
 
   async createGuest(createGuestDto: CreateGuestDto): Promise<Guest> {
-    const {
-      name,
-      lastname,
-      nationality,
-      origin,
-      destination,
-      occupation,
-      phone,
-      identification,
-    } = createGuestDto;
-
-    let guest = new Guest();
-
-    guest.name = name;
-    guest.lastname = lastname;
-    guest.identification = identification;
-    guest.occupation = occupation;
-    guest.origin = origin;
-    guest.nationality = nationality;
-    guest.destination = destination;
-    guest.phone = phone;
-    guest.permanences = [];
+    let guest = this.createGuestEntityFromDto(createGuestDto);
 
     try {
       guest = await guest.save();
@@ -61,6 +40,58 @@ export class GuestService {
     }
 
     return guest;
+  }
+
+  private createGuestEntityFromDto(createGuestDto: CreateGuestDto) {
+    const {
+      name,
+      lastname,
+      nationality,
+      origin,
+      destination,
+      occupation,
+      phone,
+      identification,
+    } = createGuestDto;
+
+    const guest = new Guest();
+
+    guest.name = name;
+    guest.lastname = lastname;
+    guest.identification = identification;
+    guest.occupation = occupation;
+    guest.origin = origin;
+    guest.nationality = nationality;
+    guest.destination = destination;
+    guest.phone = phone;
+
+    return guest;
+  }
+
+  private createArrayOfGuestEntitiesFromArrayOfDto(
+    createGuestDto: CreateGuestDto[],
+  ): Guest[] {
+    return createGuestDto.map((guestDto) =>
+      this.createGuestEntityFromDto(guestDto),
+    );
+  }
+
+  async createManyGuest(createGuestDto: CreateGuestDto[]): Promise<Guest[]> {
+    const arrayOfGuestEntities = this.createArrayOfGuestEntitiesFromArrayOfDto(
+      createGuestDto,
+    );
+
+    try {
+      await this.guestRepository.save(arrayOfGuestEntities);
+    } catch (e) {
+      if (e.code === '23505') {
+        throw new ConflictException(`Guest already has been created`);
+      } else {
+        throw new InternalServerErrorException();
+      }
+    }
+
+    return arrayOfGuestEntities;
   }
   //   constructor(
   //   ) {}

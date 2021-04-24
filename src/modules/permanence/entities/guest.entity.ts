@@ -39,8 +39,8 @@ export class Guest extends BaseEntity {
   @Column({ type: `varchar`, unique: false, length: 20, nullable: false })
   phone: string;
 
-  @ManyToMany(() => Permanence, (permanence) => permanence.guest)
-  permanences: Permanence[];
+  // @ManyToMany(() => Permanence, (permanence) => permanence.guest)
+  // permanences: Permanence[];
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

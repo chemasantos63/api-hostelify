@@ -40,7 +40,7 @@ export class Permanence extends BaseEntity {
   @Column({ type: `timestamp`, unique: false, nullable: false })
   checkIn: Date;
 
-  @Column({ type: `timestamp`, unique: false, nullable: false })
+  @Column({ type: `timestamp`, unique: false, nullable: true })
   checkOut: Date;
 
   @ManyToOne(() => User, (user) => user.permanencesIn, {
@@ -53,17 +53,13 @@ export class Permanence extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.permanencesOut, {
     cascade: true,
-    nullable: false,
+    nullable: true,
     eager: true,
   })
   @JoinColumn({ name: `userCheckOut_id` })
   userCheckOut: User;
 
-  @ManyToMany(() => Guest, (guest) => guest.permanences, {
-    cascade: true,
-    nullable: false,
-    eager: true,
-  })
+  @ManyToMany(() => Guest, { cascade: true, nullable: false, eager: true })
   @JoinTable({ name: `permanences_guest` })
   guest: Guest[];
 
