@@ -27,13 +27,13 @@ export class Guest extends BaseEntity {
   @Column({ type: `varchar`, unique: true, length: 40, nullable: false })
   identification: string;
 
-  @Column({ type: `varchar`, unique: false, length: 20, nullable: false })
+  @Column({ type: `varchar`, unique: false, length: 80, nullable: false })
   origin: string;
 
-  @Column({ type: `varchar`, unique: false, length: 20, nullable: false })
+  @Column({ type: `varchar`, unique: false, length: 80, nullable: false })
   destination: string;
 
-  @Column({ type: `varchar`, unique: false, length: 20, nullable: true })
+  @Column({ type: `varchar`, unique: false, length: 80, nullable: true })
   occupation: string;
 
   @Column({ type: `varchar`, unique: false, length: 20, nullable: false })

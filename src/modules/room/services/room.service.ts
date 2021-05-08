@@ -54,7 +54,7 @@ export class RoomService {
     room.location = location;
     room.type = await this.roomTypeRepository.findOne({ id: roomTypeId });
     room.status = await this.roomStatusRepository.findOne({
-      description: `Activa`,
+      description: `Disponible`,
     });
 
     return await room.save();
@@ -80,5 +80,13 @@ export class RoomService {
     });
 
     await this.roomRepository.update(id, room);
+  }
+
+  async setRoomAsTaken(room: Room): Promise<void> {
+    room.status = await this.roomStatusRepository.findOne({
+      description: `Ocupada`,
+    });
+
+    await room.save();
   }
 }

@@ -22,5 +22,6 @@ import { RoomStatusController } from './controllers/room.status.controller';
   ],
   providers: [RoomService, RoomTypeService, RoomStatusService],
   controllers: [RoomController, RoomTypeController, RoomStatusController],
+  exports: [RoomService, RoomTypeService, RoomStatusService],
 })
 export class RoomModule {}

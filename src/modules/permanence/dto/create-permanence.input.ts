@@ -6,5 +6,5 @@ export class CreatePermanenceDto {
   idReservation: number;
 
   @IsNotEmpty()
-  createGuestDto: CreateGuestDto[];
+  guestIds: number[];
 }

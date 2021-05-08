@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Raw } from 'typeorm';
 import { CustomerService } from '../customer/customer.service';
 import { RoomService } from '../room/services/room.service';
+import { GuestService } from './../permanence/services/guest.service';
 import { CreateReservationDto } from './dto/create-reservation.input';
 import { UpdateReservationDto } from './dto/update-reservation.input';
 import { Reservation } from './entities/reservation.entity';
@@ -13,6 +14,7 @@ export class ReservationService {
     private readonly reservationRepository: ReservationRepository,
     private readonly customerService: CustomerService,
     private readonly roomService: RoomService,
+    private readonly guestService: GuestService,
   ) {}
 
   async getAll(): Promise<Reservation[]> {
@@ -46,11 +48,14 @@ export class ReservationService {
       customerId,
       roomIds,
       roomersQty,
+      // guestDto,
     } = createReservationDto;
 
     const customer = await this.customerService.get(customerId);
 
     const rooms = await this.roomService.getByIds(roomIds);
+
+    // const guest = await this.guestService.createManyGuest(guestDto);
 
     const reservation = new Reservation();
     reservation.fromDate = fromDate;
@@ -58,6 +63,7 @@ export class ReservationService {
     reservation.customer = customer;
     reservation.rooms = rooms;
     reservation.roomersQty = roomersQty;
+    // reservation.guest = guest;
 
     return await reservation.save();
   }
@@ -72,18 +78,21 @@ export class ReservationService {
       customerId,
       roomIds,
       roomersQty,
+      guestIds,
     } = updateReservationDto;
 
     const reservation = await this.get(id);
 
     const customer = await this.customerService.get(customerId);
     const rooms = await this.roomService.getByIds(roomIds);
+    const guest = await this.guestService.getAll();
 
     reservation.fromDate = fromDate;
     reservation.toDate = toDate;
     reservation.customer = customer;
     reservation.rooms = rooms;
     reservation.roomersQty = roomersQty;
+    reservation.guest = guest.filter((g) => guestIds.includes(g.id));
 
     await reservation.save();
   }

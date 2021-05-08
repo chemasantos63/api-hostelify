@@ -1,4 +1,4 @@
-import { CustomerTypesRepository } from './customer.types.repository';
+import { CustomerTypeRepository } from './customer.types.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CustomerRepository } from './customer.repository';
 import { CustomerType } from './entities/customer.types.entity';
@@ -10,7 +10,7 @@ import { UpdateCustomerDto } from './dto/update-customer-input';
 export class CustomerService {
   constructor(
     private readonly customerRepository: CustomerRepository,
-    private readonly customerTypesRepository: CustomerTypesRepository,
+    private readonly customerTypesRepository: CustomerTypeRepository,
   ) {}
 
   async getAll(): Promise<Customer[]> {

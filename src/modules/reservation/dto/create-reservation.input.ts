@@ -1,4 +1,5 @@
 import { IsDate, IsNotEmpty } from 'class-validator';
+import { CreateGuestDto } from '../../permanence/dto/create-guest.input';
 
 export class CreateReservationDto {
   @IsDate()
@@ -15,4 +16,6 @@ export class CreateReservationDto {
 
   @IsNotEmpty()
   roomersQty: string;
+
+  // guestDto: CreateGuestDto[];
 }

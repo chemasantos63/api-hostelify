@@ -1,3 +1,4 @@
+import { Guest } from './../../permanence/entities/guest.entity';
 import {
   BaseEntity,
   Column,
@@ -12,6 +13,7 @@ import {
 } from 'typeorm';
 import { Customer } from '../../customer/entities/customer.entity';
 import { Room } from '../../room/entities/room.entity';
+import { truncate } from 'fs';
 
 @Entity(`reservations`)
 export class Reservation extends BaseEntity {
@@ -35,6 +37,10 @@ export class Reservation extends BaseEntity {
   @ManyToMany(() => Room, { cascade: true, nullable: false, eager: true })
   @JoinTable({ name: `reservations_rooms` })
   rooms: Room[];
+
+  @ManyToMany(() => Guest, { cascade: true, nullable: true, eager: true })
+  @JoinTable({ name: `reservations_guest` })
+  guest: Guest[];
 
   @Column({ type: `varchar`, nullable: false, default: 'active' })
   status: string;
