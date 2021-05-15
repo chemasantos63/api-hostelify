@@ -1,3 +1,4 @@
+import { PermanenceOperations } from './../../shared/constants';
 import {
   Body,
   Controller,
@@ -23,9 +24,11 @@ import { ReservationService } from './reservation.service';
 export class ReservationController {
   constructor(private readonly reservationService: ReservationService) {}
 
-  @Get(`today`)
-  async getTodayReservations(): Promise<Reservation[]> {
-    return await this.reservationService.getTodayReservations();
+  @Get(`today/:operation`)
+  async getTodayReservations(
+    @Param(`operation`) operation: PermanenceOperations,
+  ): Promise<Reservation[]> {
+    return await this.reservationService.getTodayReservations(operation);
   }
 
   @Get(`:id`)

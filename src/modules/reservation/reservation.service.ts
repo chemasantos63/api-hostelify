@@ -1,3 +1,4 @@
+import { PermanenceOperations } from './../../shared/constants';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Raw } from 'typeorm';
 import { CustomerService } from '../customer/customer.service';
@@ -23,9 +24,21 @@ export class ReservationService {
     });
   }
 
-  async getTodayReservations(): Promise<Reservation[]> {
+  async getTodayReservations(
+    operation: PermanenceOperations,
+  ): Promise<Reservation[]> {
+    if (PermanenceOperations.CheckIn === operation) {
+      return await this.reservationRepository.find({
+        fromDate: Raw((d) => `${d} = current_date`),
+      });
+    } else {
+      return await this.getTodayReservationsCheckOut();
+    }
+  }
+
+  private async getTodayReservationsCheckOut(): Promise<Reservation[]> {
     return await this.reservationRepository.find({
-      fromDate: Raw((d) => `${d} = current_date`),
+      toDate: Raw((d) => `${d} = current_date`),
     });
   }
 

@@ -13,6 +13,9 @@ import { RoomerModule } from './modules/roomer/roomer.module';
 import { ReservationModule } from './modules/reservation/reservation.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PermanenceModule } from './modules/permanence/permanence.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { PaymentMethodModule } from './modules/payment-method/payment-method.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { PermanenceModule } from './modules/permanence/permanence.module';
     ReservationModule,
     AuthModule,
     PermanenceModule,
+    BillingModule,
+    PaymentModule,
+    PaymentMethodModule,
   ],
   controllers: [AppController],
   providers: [AppService],
