@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Between, MoreThanOrEqual, Raw } from 'typeorm';
 import { CreateFiscalInformationDto } from './dto/create-fiscal-information.dto';
 import { UpdateFiscalInformationDto } from './dto/update-fiscal-information.dto';
 import { FiscalInformation } from './entities/fiscal-information.entity';
@@ -25,11 +26,31 @@ export class FiscalInformationService {
     return await this.fiscalInfortionRepository.findOne({ id });
   }
 
-  update(id: number, updateFiscalInformationDto: UpdateFiscalInformationDto) {
-    return `This action updates a #${id} fiscalInformation`;
+  async update(
+    id: number,
+    updateFiscalInformationDto: UpdateFiscalInformationDto,
+  ): Promise<void> {
+    await this.fiscalInfortionRepository.update(
+      { id },
+      updateFiscalInformationDto,
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} fiscalInformation`;
+  async findOneActive(): Promise<FiscalInformation> {
+    const fiscalInformationActive = await this.fiscalInfortionRepository
+      .createQueryBuilder('fiscalInfo')
+      .where(
+        'current_date BETWEEN fiscalInfo.dateValidFrom AND fiscalInfo.dateValidTo',
+      )
+      .andWhere(
+        'fiscalInfo.currentNumber BETWEEN fiscalInfo.begin AND (fiscalInfo.end - 1)',
+      )
+      .getOne();
+
+    if (!fiscalInformationActive) {
+      throw new NotFoundException(`No se encontro informacion fiscal activa`);
+    }
+
+    return fiscalInformationActive;
   }
 }

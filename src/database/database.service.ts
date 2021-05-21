@@ -18,7 +18,7 @@ export const databaseProviders = [
         database: config.get(Configuration.DATABASE),
         entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
         migrations: [`${__dirname}/migrations/*{.ts,.js}`],
-        synchronize: true,
+        // synchronize: true,
         // logging: true,
       } as unknown) as ConnectionOptions;
     },
