@@ -1,15 +1,21 @@
+import { PaymentRepository } from './payment.repository';
 import { Injectable } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { Payment } from './entities/payment.entity';
 
 @Injectable()
 export class PaymentService {
-  create(createPaymentDto: CreatePaymentDto) {
-    return 'This action adds a new payment';
+  constructor(private readonly paymentRepository: PaymentRepository) {}
+
+  async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
+    const payment = new Payment(createPaymentDto);
+    return await payment.save();
   }
 
-  findAll() {
-    return `This action returns all payment`;
+  async findAll(): Promise<Payment[]> {
+    const payments = await this.paymentRepository.find({});
+    return payments;
   }
 
   findOne(id: number) {

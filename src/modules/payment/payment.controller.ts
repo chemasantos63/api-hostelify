@@ -1,28 +1,29 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Put,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { Payment } from './entities/payment.entity';
+import { PaymentService } from './payment.service';
 
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post()
-  create(@Body() createPaymentDto: CreatePaymentDto) {
-    return this.paymentService.create(createPaymentDto);
+  async create(@Body() createPaymentDto: CreatePaymentDto): Promise<Payment> {
+    return await this.paymentService.create(createPaymentDto);
   }
 
   @Get()
-  findAll() {
-    return this.paymentService.findAll();
+  async findAll(): Promise<Payment[]> {
+    return await this.paymentService.findAll();
   }
 
   @Get(':id')
@@ -30,7 +31,7 @@ export class PaymentController {
     return this.paymentService.findOne(+id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
     return this.paymentService.update(+id, updatePaymentDto);
   }

@@ -15,6 +15,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Guest } from './guest.entity';
+import { Billing } from './../../billing/entities/billing.entity';
 
 @Entity(`permanences`)
 export class Permanence extends BaseEntity {
@@ -62,6 +63,13 @@ export class Permanence extends BaseEntity {
   @ManyToMany(() => Guest, { cascade: true, nullable: false, eager: true })
   @JoinTable({ name: `permanences_guest` })
   guest: Guest[];
+
+  @ManyToOne(() => Billing, (invoice) => invoice.permanences, {
+    cascade: true,
+    nullable: true,
+    eager: true,
+  })
+  invoice: Billing;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

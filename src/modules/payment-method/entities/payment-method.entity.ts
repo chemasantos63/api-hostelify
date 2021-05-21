@@ -18,7 +18,7 @@ export class PaymentMethod extends BaseEntity {
   @Column({ type: `decimal`, nullable: false, default: 1 })
   exchangeRate: number;
 
-  @Column({ type: `varchar`, length: 4, nullable: false, default: 'active' })
+  @Column({ type: `varchar`, length: 4, nullable: false })
   symbol: string;
 
   @Column({ type: `varchar`, nullable: false, default: 'active' })

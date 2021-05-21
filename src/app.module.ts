@@ -16,6 +16,9 @@ import { PermanenceModule } from './modules/permanence/permanence.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { PaymentMethodModule } from './modules/payment-method/payment-method.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { TotalModule } from './modules/total/total.module';
+import { FiscalInformationModule } from './modules/fiscal-information/fiscal-information.module';
+
 
 @Module({
   imports: [
@@ -32,6 +35,8 @@ import { PaymentModule } from './modules/payment/payment.module';
     BillingModule,
     PaymentModule,
     PaymentMethodModule,
+    TotalModule,
+    FiscalInformationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
