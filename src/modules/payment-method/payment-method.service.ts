@@ -24,8 +24,8 @@ export class PaymentMethodService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} paymentMethod`;
+  async findOne(id: number): Promise<PaymentMethod> {
+    return await this.paymentMethodRepository.findOne({ id });
   }
 
   update(id: number, updatePaymentMethodDto: UpdatePaymentMethodDto) {

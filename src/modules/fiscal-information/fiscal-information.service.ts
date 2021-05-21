@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Between, MoreThanOrEqual, Raw } from 'typeorm';
 import { CreateFiscalInformationDto } from './dto/create-fiscal-information.dto';
 import { UpdateFiscalInformationDto } from './dto/update-fiscal-information.dto';
 import { FiscalInformation } from './entities/fiscal-information.entity';

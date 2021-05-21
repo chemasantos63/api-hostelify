@@ -22,7 +22,7 @@ export class Billing extends BaseEntity {
   @OneToMany(() => Permanence, (permanence) => permanence.invoice)
   permanences: Permanence[];
 
-  @OneToMany(() => Payment, (payment) => payment.invoice)
+  @OneToMany(() => Payment, (payment) => payment.invoice, { eager: true })
   payments: Payment[];
 
   @OneToOne((type) => Total, {
@@ -56,8 +56,10 @@ export class Billing extends BaseEntity {
   @UpdateDateColumn({ type: `timestamp`, name: `updated_at` })
   updatedAt: Date;
 
-  constructor(partial: Partial<Billing>) {
+  constructor(partial?: Partial<Billing>) {
     super();
-    Object.assign(this, partial);
+    if (partial) {
+      Object.assign(this, partial);
+    }
   }
 }

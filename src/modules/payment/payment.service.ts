@@ -1,16 +1,38 @@
+import { PaymentMethodService } from './../payment-method/payment-method.service';
 import { PaymentRepository } from './payment.repository';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Payment } from './entities/payment.entity';
 
 @Injectable()
 export class PaymentService {
-  constructor(private readonly paymentRepository: PaymentRepository) {}
+  private logger = new Logger(`PaymentService`);
+
+  constructor(
+    private readonly paymentRepository: PaymentRepository,
+    private readonly paymentMethodService: PaymentMethodService,
+  ) {}
 
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
+    this.logger.verbose(
+      `Creating payment with DTO:${JSON.stringify(createPaymentDto)}`,
+    );
     const payment = new Payment(createPaymentDto);
-    return await payment.save();
+
+    const paymentMethod = await this.paymentMethodService.findOne(
+      createPaymentDto.paymentMethodId,
+    );
+
+    if (!paymentMethod) {
+      throw new NotFoundException(
+        `No se encontro el metodo de pago seleccionado.`,
+      );
+    }
+
+    payment.paymentMethod = paymentMethod;
+
+    return payment;
   }
 
   async findAll(): Promise<Payment[]> {

@@ -41,8 +41,12 @@ export class Total extends BaseEntity {
   @UpdateDateColumn({ type: `timestamp`, name: `updated_at` })
   updatedAt: Date;
 
-  constructor(partial: Partial<Total>) {
+  constructor(partial?: Partial<Total>) {
     super();
-    Object.assign(this, partial);
+    if (partial) {
+      Object.assign(this, partial);
+    }
+
+    this.subtotal = this.total = this.tax15Amount = this.taxedAmount = this.tax18Amount = this.taxedAmount = this.exemptAmount = this.tourismTax = 0;
   }
 }

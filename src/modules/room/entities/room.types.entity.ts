@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Room } from './room.entity';
+import { RoomTypeDetail } from './room.types-detail.entity';
 
 @Entity(`room_types`)
 export class RoomType extends BaseEntity {
@@ -16,6 +17,13 @@ export class RoomType extends BaseEntity {
 
   @Column({ type: `varchar`, unique: true, length: 15, nullable: false })
   type: string;
+
+  @OneToMany(
+    (type) => RoomTypeDetail,
+    (roomTypeDetail) => roomTypeDetail.roomType,
+    { eager: true },
+  )
+  roomTypesDetail: RoomTypeDetail[];
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

@@ -28,7 +28,6 @@ export class Payment extends BaseEntity {
   @ManyToOne(() => Billing, (invoice) => invoice.payments, {
     cascade: true,
     nullable: true,
-    eager: true,
   })
   invoice: Billing;
 

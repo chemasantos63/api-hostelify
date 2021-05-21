@@ -10,19 +10,20 @@ import {
 import { BillingService } from './billing.service';
 import { CreateBillingDto } from './dto/create-billing.dto';
 import { UpdateBillingDto } from './dto/update-billing.dto';
+import { Billing } from './entities/billing.entity';
 
 @Controller('billing')
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
   @Post()
-  create(@Body() createBillingDto: CreateBillingDto) {
-    return this.billingService.create(createBillingDto);
+  async create(@Body() createBillingDto: CreateBillingDto): Promise<Billing> {
+    return await this.billingService.create(createBillingDto);
   }
 
   @Get()
-  findAll() {
-    return this.billingService.findAll();
+  async findAll(): Promise<Billing[]> {
+    return await this.billingService.findAll();
   }
 
   @Get(':id')
