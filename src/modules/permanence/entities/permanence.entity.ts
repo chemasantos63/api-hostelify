@@ -67,6 +67,7 @@ export class Permanence extends BaseEntity {
   @ManyToOne(() => Billing, (invoice) => invoice.permanences, {
     cascade: true,
     nullable: true,
+    eager: true,
   })
   invoice: Billing;
 

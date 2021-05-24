@@ -17,11 +17,7 @@ export class Payment extends BaseEntity {
   @PrimaryGeneratedColumn(`increment`)
   id: number;
 
-  @OneToOne((type) => PaymentMethod, {
-    cascade: true,
-    nullable: false,
-    eager: true,
-  })
+  @ManyToOne((type) => PaymentMethod, (paymentMethod) => paymentMethod.payments)
   @JoinColumn({ name: `payment_method_id` })
   paymentMethod: PaymentMethod;
 

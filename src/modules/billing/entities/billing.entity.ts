@@ -8,6 +8,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -33,7 +34,7 @@ export class Billing extends BaseEntity {
   @JoinColumn({ name: `total_id` })
   total: Total;
 
-  @OneToOne((type) => FiscalInformation, {
+  @ManyToOne((type) => FiscalInformation, {
     cascade: true,
     nullable: false,
     eager: true,

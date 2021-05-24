@@ -4,12 +4,17 @@ import { CreateTotalDto } from './dto/create-total.dto';
 import { UpdateTotalDto } from './dto/update-total.dto';
 import { Total } from './entities/total.entity';
 import { TotalRepository } from './total.repository';
+import BigNumber from 'bignumber.js';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class TotalService {
   constructor(private readonly totalRepository: TotalRepository) {}
 
-  async create(createTotalDto: CreateTotalDto): Promise<Total> {
+  async create(
+    createTotalDto: CreateTotalDto,
+    manager?: EntityManager,
+  ): Promise<Total> {
     const total = new Total();
 
     for (const permanence of createTotalDto.permanences) {
@@ -18,21 +23,22 @@ export class TotalService {
           (rtd) => rtd.roomersQuantity === +permanence.reservation.roomersQty,
         ).price;
 
-        total.subtotal += totalToPay;
+        total.subtotal += +totalToPay;
       }
     }
 
-    total.taxedAmount = total.subtotal;
-    total.tax15Amount = total.subtotal * 0.15;
+    total.taxedAmount = this.roundNumber(+total.subtotal);
+    total.tax15Amount = this.roundNumber(total.subtotal * 0.15);
     total.tax18Amount = 0;
-    total.tourismTax = total.subtotal * 0.04;
-    total.total =
+    total.tourismTax = this.roundNumber(total.subtotal * 0.04);
+    total.total = this.roundNumber(
       +total.subtotal +
-      +total.tax15Amount +
-      +total.tax18Amount +
-      +total.tourismTax;
+        +total.tax15Amount +
+        +total.tax18Amount +
+        +total.tourismTax,
+    );
 
-    return total;
+    return manager ? await manager.save(total) : total.save();
   }
 
   findAll() {
@@ -49,5 +55,15 @@ export class TotalService {
 
   remove(id: number) {
     return `This action removes a #${id} total`;
+  }
+
+  private roundNumber(nmbr: number): number {
+    const bigNumberConvert = new BigNumber(nmbr);
+    // console.log(
+    //   `antes de redondear:${nmbr} despues de redondear:${bigNumberConvert
+    //     .precision(12, BigNumber.ROUND_HALF_UP)
+    //     .toFixed(0)}`,
+    // );
+    return +bigNumberConvert.precision(12, BigNumber.ROUND_HALF_UP).toFixed(0);
   }
 }

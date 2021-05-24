@@ -1,8 +1,10 @@
+import { Payment } from './../../payment/entities/payment.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -20,6 +22,9 @@ export class PaymentMethod extends BaseEntity {
 
   @Column({ type: `varchar`, length: 4, nullable: false })
   symbol: string;
+
+  @OneToMany(() => Payment, (payment) => payment.paymentMethod)
+  payments: Payment[];
 
   @Column({ type: `varchar`, nullable: false, default: 'active' })
   status: string;

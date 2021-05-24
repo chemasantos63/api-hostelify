@@ -4,6 +4,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Payment } from './entities/payment.entity';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class PaymentService {
@@ -14,7 +15,10 @@ export class PaymentService {
     private readonly paymentMethodService: PaymentMethodService,
   ) {}
 
-  async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
+  async create(
+    createPaymentDto: CreatePaymentDto,
+    manager?: EntityManager,
+  ): Promise<Payment> {
     this.logger.verbose(
       `Creating payment with DTO:${JSON.stringify(createPaymentDto)}`,
     );
@@ -32,7 +36,7 @@ export class PaymentService {
 
     payment.paymentMethod = paymentMethod;
 
-    return payment;
+    return manager ? await manager.save(payment) : await payment.save();
   }
 
   async findAll(): Promise<Payment[]> {

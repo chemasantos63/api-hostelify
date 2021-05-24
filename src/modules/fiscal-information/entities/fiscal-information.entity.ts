@@ -1,8 +1,11 @@
+import { Billing } from './../../billing/entities/billing.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -38,6 +41,9 @@ export class FiscalInformation extends BaseEntity {
 
   @Column({ type: `varchar`, nullable: false, default: 'active' })
   status: string;
+
+  @OneToMany((type) => Billing, (billing) => billing.fiscalInformation)
+  invoices: Billing[];
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;
