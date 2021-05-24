@@ -37,6 +37,7 @@ export class TotalService {
         +total.tax18Amount +
         +total.tourismTax,
     );
+    total.subtotal = this.roundNumber(total.subtotal);
 
     return manager ? await manager.save(total) : total.save();
   }
