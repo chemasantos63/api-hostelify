@@ -1,3 +1,4 @@
+import { TotalModule } from './../total/total.module';
 import { RoomModule } from './../room/room.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -16,6 +17,7 @@ import { PermanenceService } from './services/permanence.service';
     TypeOrmModule.forFeature([PermanenceRepository, GuestRepository]),
     forwardRef(() => ReservationModule),
     RoomModule,
+    TotalModule,
   ],
   providers: [GuestService, PermanenceService],
   controllers: [GuestController, PermanenceController],

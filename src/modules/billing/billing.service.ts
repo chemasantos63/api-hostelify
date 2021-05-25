@@ -14,7 +14,7 @@ import {
 import { CreateBillingDto } from './dto/create-billing.dto';
 import { UpdateBillingDto } from './dto/update-billing.dto';
 import { FiscalInformationService } from '../fiscal-information/fiscal-information.service';
-import { Connection } from 'typeorm';
+import { Connection, EntityManager } from 'typeorm';
 import { query } from 'express';
 import { FiscalInformation } from '../fiscal-information/entities/fiscal-information.entity';
 import { Total } from '../total/entities/total.entity';
@@ -142,7 +142,10 @@ export class BillingService {
     }
   }
 
-  private async createBillingTotals(invoice: Billing, manager) {
+  private async createBillingTotals(
+    invoice?: Billing,
+    manager?: EntityManager,
+  ) {
     const total = await this.totalService.create(
       {
         permanences: invoice.permanences,

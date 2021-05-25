@@ -20,7 +20,7 @@ import { UpdateBillingDto } from './dto/update-billing.dto';
 import { Billing } from './entities/billing.entity';
 
 @Controller('billing')
-@UseGuards(AuthGuard())
+// @UseGuards(AuthGuard())
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 

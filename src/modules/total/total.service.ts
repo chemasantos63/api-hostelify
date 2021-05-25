@@ -14,6 +14,7 @@ export class TotalService {
   async create(
     createTotalDto: CreateTotalDto,
     manager?: EntityManager,
+    simulate?: boolean,
   ): Promise<Total> {
     const total = new Total();
 
@@ -38,8 +39,11 @@ export class TotalService {
         +total.tourismTax,
     );
     total.subtotal = this.roundNumber(total.subtotal);
-
-    return manager ? await manager.save(total) : total.save();
+    if (simulate) {
+      return total;
+    } else {
+      return manager ? await manager.save(total) : total.save();
+    }
   }
 
   findAll() {

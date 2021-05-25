@@ -1,3 +1,5 @@
+import { TotalService } from './../../total/total.service';
+import { BillingService } from './../../billing/billing.service';
 import { Room } from './../../room/entities/room.entity';
 import { RoomService } from './../../room/services/room.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -15,6 +17,7 @@ export class PermanenceService {
     private readonly reservationService: ReservationService,
     private readonly guestService: GuestService,
     private readonly roomService: RoomService,
+    private readonly totalService: TotalService,
   ) {}
 
   async getAll(): Promise<Permanence[]> {
@@ -54,5 +57,28 @@ export class PermanenceService {
     }
 
     return permanence.save();
+  }
+
+  async getTotalToPayByPermanencesId(permanencesId: number[]): Promise<any> {
+    const permanences = await this.permanenceRepository.findByIds(
+      permanencesId,
+    );
+
+    if (permanences.length === 0) {
+      throw new NotFoundException(
+        `No se encontraron permanencias con los siguientes id:${permanencesId.reduce(
+          (act, acc) => `${acc},${act}`,
+          '',
+        )}`,
+      );
+    }
+
+    const total = await this.totalService.create(
+      { permanences },
+      undefined,
+      true,
+    );
+
+    return { total: total.total };
   }
 }

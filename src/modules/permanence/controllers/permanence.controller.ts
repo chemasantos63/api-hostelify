@@ -1,3 +1,4 @@
+import { TotalToPayDto } from './../dto/total-to-pay.input';
 import {
   Body,
   Controller,
@@ -35,6 +36,16 @@ export class PermanenceController {
   ): Promise<Permanence> {
     const permanence = await this.permanenceService.get(id);
     return permanence;
+  }
+
+  @Post(`/totalToPay`)
+  @TransformClassToPlain()
+  async getTotalToPayByPermanencesId(
+    @Body() totalToPayDto: TotalToPayDto,
+  ): Promise<number> {
+    return await this.permanenceService.getTotalToPayByPermanencesId(
+      totalToPayDto.permanencesId,
+    );
   }
 
   @Post()
