@@ -1,3 +1,4 @@
+import { AuthModule } from './../auth/auth.module';
 import { PaymentModule } from './../payment/payment.module';
 import { TotalModule } from './../total/total.module';
 import { FiscalInformationModule } from './../fiscal-information/fiscal-information.module';
@@ -10,6 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
+    AuthModule,
     TypeOrmModule.forFeature([BillingRepository]),
     PermanenceModule,
     FiscalInformationModule,

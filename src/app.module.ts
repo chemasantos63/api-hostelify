@@ -18,6 +18,7 @@ import { PaymentMethodModule } from './modules/payment-method/payment-method.mod
 import { PaymentModule } from './modules/payment/payment.module';
 import { TotalModule } from './modules/total/total.module';
 import { FiscalInformationModule } from './modules/fiscal-information/fiscal-information.module';
+
 @Module({
   imports: [
     ConfigModule,

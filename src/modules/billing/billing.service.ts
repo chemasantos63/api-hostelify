@@ -9,6 +9,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateBillingDto } from './dto/create-billing.dto';
 import { UpdateBillingDto } from './dto/update-billing.dto';
@@ -18,9 +19,17 @@ import { query } from 'express';
 import { FiscalInformation } from '../fiscal-information/entities/fiscal-information.entity';
 import { Total } from '../total/entities/total.entity';
 import { Permanence } from '../permanence/entities/permanence.entity';
+import { User } from '../user/user.entity';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as utils from 'util';
+import * as hb from 'handlebars';
+import { launch } from 'puppeteer';
 
 @Injectable()
 export class BillingService {
+  private readFile = utils.promisify(fs.readFile);
+
   private logger = new Logger(`BillingService`);
 
   constructor(
@@ -208,5 +217,81 @@ export class BillingService {
 
   remove(id: number) {
     return `This action removes a #${id} billing`;
+  }
+
+  async createInvoicePdf(user: User, id: number): Promise<Buffer> {
+    const invoice = await this.billingRepository.findOne({ id });
+
+    if (!invoice) {
+      throw new NotFoundException('La factura no existe');
+    }
+
+    await this.generatePdf({
+      id: invoice.id,
+      invoiceTitle: `Esta es la primera factura de prueba`,
+    });
+
+    const filePath = `${path.join(__dirname, `..`, `..`, `public`)}/invoice_${
+      invoice.id
+    }.pdf`;
+
+    const pdf = await new Promise<Buffer>((resolve, reject) => {
+      fs.readFile(filePath, {}, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+
+    return pdf;
+  }
+
+  private async getTemplateHtml(): Promise<string> {
+    this.logger.verbose(`Loading template file in memory`);
+
+    try {
+      const invoiceTemplatePath = path.resolve(
+        `${path.join(__dirname, `..`, `..`, `templates`)}/invoice.hbs`,
+      );
+      return await this.readFile(invoiceTemplatePath, `utf-8`);
+    } catch (e) {
+      return Promise.reject(`Could not load html template`);
+    }
+  }
+
+  private async generatePdf(data: any) {
+    try {
+      const htmlTemplate = await this.getTemplateHtml();
+
+      this.logger.verbose(`Compiling the template with handlebars`);
+
+      const template = hb.compile(htmlTemplate, { strict: true });
+
+      const result = template(data);
+
+      const browser = await launch();
+      const page = await browser.newPage();
+
+      await page.setContent(result);
+
+      const pathToSavePdf = path.resolve(
+        `${path.join(__dirname, `..`, `..`, `public`)}/invoice_${data.id}.pdf`,
+      );
+
+      await page.pdf({
+        path: pathToSavePdf,
+        format: 'letter',
+        printBackground: true,
+      });
+
+      await browser.close();
+
+      this.logger.verbose(`PDF Generated`);
+    } catch (e) {
+      this.logger.error(`An Error has ocurred generating PDF`, e.stack);
+      throw e;
+    }
   }
 }
