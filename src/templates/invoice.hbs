@@ -4,37 +4,144 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factura de prueba</title>
     <style>
-        .container{
+        .header{
             display: block;
             width: 100%;
             height: auto;
             border:solid 1px black;
-            background-color: blue;
+            background-color: white;
             text-align: center;
         }
 
-        h1{
-            color: #a83232;
+        .detail{
+
         }
+
+        .sumary{
+
+        }
+
     </style>
 </head>
 <body>
+<div class="wrapper">
+  <div class="header">
     <div class="container">
-        <h1>{{invoiceTitle}}</h1>
+      <div class="row">
+        <div class="col-sm-12">Nombre negocio</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">Dueño</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">correo</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">RTN</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">Direccion</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">Telefono</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">CAI</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">Rango Autorizado</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">Fecha limite emision</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Nro</div>
+        <div class="col-sm-6">000-000-00-999999999</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Fecha:</div>
+        <div class="col-sm-6">01/01/2021</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Forma de pago:</div>
+        <div class="col-sm-6">Contado</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Cliente:</div>
+        <div class="col-sm-6">Consumidor Final</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">RTN Cliente:</div>
+        <div class="col-sm-6">999999999</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Usuario:</div>
+        <div class="col-sm-6">Prueba</div>
+      </div>
     </div>
+  </div>
+  <div class="detail">
     <div class="container">
-        <h1>{{invoiceTitle}}</h1>
+      <div class="row">
+        <div class="col-sm-3">Cant</div>
+        <div class="col-sm-6">Descripcion</div>
+        <div class="col-sm-3">Total</div>
+      </div>
     </div>
+  </div>
+  <div class="footer">
     <div class="container">
-        <h1>{{invoiceTitle}}</h1>
+      <div class="row">
+        <div class="col-sm-6">Subtotal</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Descuento</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Importe Gravado</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Importe Exento</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">I.S.V. 15%</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">I.S.V. 18%</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Total</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Pago</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">Cambio</div>
+        <div class="col-sm-6">00.00</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">Cantidad en letras</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">No Orden Compra Exenta</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">No Registro Exonerado</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">Registro SAG</div>
+      </div>      
     </div>
-    <div class="container">
-        <h1>{{invoiceTitle}}</h1>
-    </div>
-    <div class="container">
-        <h1>{{invoiceTitle}}</h1>
-    </div>
+  </div>
+</div>
 </body>
 </html>
