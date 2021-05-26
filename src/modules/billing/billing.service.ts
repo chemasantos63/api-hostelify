@@ -285,8 +285,8 @@ export class BillingService {
 
       await page.pdf({
         path: pathToSavePdf,
-        format: 'letter',
         printBackground: true,
+        width: `8cm`,
       });
 
       await browser.close();
