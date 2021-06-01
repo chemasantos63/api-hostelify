@@ -1,147 +1,469 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        .header{
+        body {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+
+        .wrapper {
+            /* box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5); */
+            padding: 0;
+            margin: 1mm 0;
+            width: 72.1mm;
+        }
+
+        .header {
             display: block;
             width: 100%;
-            height: auto;
-            border:solid 1px black;
-            background-color: white;
+            text-align: center;
+            font-size: .7em;
+            margin-bottom: 1rem;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .containerLogo {
+            justify-content: center;
+        }
+
+        .row .companyAndOwnerContainer {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .row .companyAndOwnerContainer h4 {
+            font-size: 0.9rem;
             text-align: center;
         }
 
-        .detail{
+
+
+        .row .documentTypeContainer {
+            border: solid black 1px;
+            border-radius: 5px;
+        }
+
+        .row .documentTypeContainer h3 {
+            font-size: 0.9rem;
+            padding: 0;
+            margin: .2em;
+        }
+
+        .invoiceDataContainer {
+            /* border: solid 2px #000000;
+            border-radius: 5px; */
+            width: 100%;
+        }
+
+        .firstSection {
+            text-align: left;
+            width: 100%;
+            font-size: 0.8rem;
+            border-bottom: solid 1px black;
+            padding: 0 0 .3rem 0;
+            font-size: .6rem;
+            margin-bottom: .5rem;
+        }
+
+        .invoiceNumberAndConditionContainer {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-top: .3em;
 
         }
 
-        .sumary{
+        .invoiceNumber {
+            padding-right: .3em;
+        }
+
+        .secondSection {
+            text-align: left;
+            width: 100%;
+            font-size: 0.8rem;
+            border-bottom: solid 1px black;
+            padding: 0 0 .3rem 0;
+            font-size: .6rem;
+            margin-bottom: .5rem;
+        }
+
+        .customerCodeAndIdContainer {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .idContainer {
+            padding-right: .3em;
+        }
+
+        .thirdSection {
+            text-align: left;
+            width: 100%;
+            font-size: 0.8rem;
+            padding: 0 0 0 0;
+            font-size: .6rem;
+        }
+
+        .logo {
+
+            height: 60px;
+            width: 60px;
+            background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
+            background-size: 60px 60px;
+        }
+
+
+
+        h5 {
+            padding: 0;
+            margin: .3em;
+        }
+
+        .detail {
+            width: 100%;
+        }
+
+        .detailTable {
+            font-size: .6rem;
+        }
+
+        table {
+            margin-top: .5rem;
+            border-top: solid 2px black;
+            border-collapse: collapse;
+            border-bottom: solid 2px black;
+        }
+
+        table thead tr {
+            border-bottom: solid 1px black;
 
         }
 
+        td {
+            text-align: right;
+        }
+
+        .containerLabelValue {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            width: 100%;
+            font-size: .7rem;
+            font-weight: 700;
+        }
+
+        .containerLabelValue .value {
+            width: 25%;
+            text-align: right;
+        }
+
+        .containerWrittenValue {
+            font-size: .7rem;
+            width: 100%;
+            margin-top: .5rem;
+        }
+
+        .containerPaymentMethods {
+            font-size: .7rem;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-top: .5rem;
+        }
+
+        .containerPaymentMethods .headerLabel {
+            text-decoration: underline;
+        }
     </style>
+
 </head>
+
 <body>
-<div class="wrapper">
-  <div class="header">
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-12">Nombre negocio</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">Dueño</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">correo</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">RTN</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">Direccion</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">Telefono</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">CAI</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">Rango Autorizado</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">Fecha limite emision</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Nro</div>
-        <div class="col-sm-6">000-000-00-999999999</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Fecha:</div>
-        <div class="col-sm-6">01/01/2021</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Forma de pago:</div>
-        <div class="col-sm-6">Contado</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Cliente:</div>
-        <div class="col-sm-6">Consumidor Final</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">RTN Cliente:</div>
-        <div class="col-sm-6">999999999</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Usuario:</div>
-        <div class="col-sm-6">Prueba</div>
-      </div>
+
+    <div class="wrapper">
+
+        <div class="header">
+            <div class="row containerLogo">
+                <div class="logo"></div>
+            </div>
+
+            <div class="row">
+                <div class="companyAndOwnerContainer">
+                    <h5>
+                        Inversiones Sandoval Santos
+                    </h5>
+                    <h5>
+                        Manuel de Jes&uacute;s Sandoval Santos
+                    </h5>
+                    <h5>
+                        Barrio San Jos&eacute;,Frente a Hondutel, Ocotepeque, Ocotepeque
+                    </h5>
+                    <h5>
+                        Tel: 2653-3098 / 9845-0338
+                    </h5>
+                    <h5>
+                        R.T.N.: 14011982003367
+                    </h5>
+                    <h5>
+                        Correo: hotelsandoval@yahoo.com
+                    </h5>
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="invoiceDataContainer">
+                <div class="firstSection">
+                    <div class="invoiceNumberAndConditionContainer">
+                        <div class="label">
+                            <label>
+                                <strong>
+                                    FACTURA:
+                                </strong>
+                            </label>
+                            <span>
+                                <strong>
+                                    {{invoiceCondition}}
+                                </strong>
+                            </span>
+                        </div>
+                        <div class="invoiceNumber">
+                            # {{invoiceNumber}}
+                        </div>
+                    </div>
+                    <div class="invoiceDate">
+                        Fecha: {{invoiceDateAndTime}}
+                    </div>
+                </div>
+                <div class="secondSection">
+                    <div class="customerNameDataContainer">
+                        <div class="customerNamesContainer">
+                            <label>Cliente: </label>
+                            <span><strong>{{customerName}}</strong></span>
+                        </div>
+                        <div class="customerCodeAndIdContainer">
+                            <div class="codeContainer">
+                                <label>Codigo: </label>
+                                <span><strong>{{customerCode}}</strong></span>
+                            </div>
+                            <div class="idContainer">
+                                <label>RTN/ID: </label>
+                                <span><strong>{{customerIdentification}}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="thirdSection">
+                    <div class="fiscalInvoiceInformationContainer">
+                        <div>
+                            <label>
+                                C.A.I.:
+                            </label>
+                            <span>
+                                <strong>
+                                    {{invoiceCai}}
+                                </strong>
+                            </span>
+                        </div>
+                        <div>
+                            <label>
+                                Fecha Limite de Emisi&oacute;n:
+                            </label>
+                            <span>
+                                <strong>
+                                    {{fiscalInformationDateValidTo}}
+                                </strong>
+                            </span>
+                        </div>
+                        <div>
+                            <label>
+                                Rango Autorizado:
+                            </label>
+                            <span>
+                                <strong>
+                                   {{fiscalInformationRange}}
+                                </strong>
+                            </span>
+                        </div>
+                        <div>
+                            <label>
+                                Registro SAG:
+                            </label>
+                            <span>
+                                <strong>
+
+                                </strong>
+                            </span>
+                        </div>
+                        <div>
+                            <label>
+                                Constancia de Registro Exonerado:
+                            </label>
+                            <span>
+                                <strong>
+
+                                </strong>
+                            </span>
+                        </div>
+                        <div>
+                            <label>
+                                Orden de Compra Exenta:
+                            </label>
+                            <span>
+                                <strong>
+
+                                </strong>
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- details -->
+        <div class="row">
+            <table class="detailTable">
+                <thead>
+                    <tr>
+                        <th>Cant.</th>
+                        <th>Articulo</th>
+                        <th>Unitario</th>
+                        <th>Descuentos y Rebajas Otorgados</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each invoiceDetail}}
+                        <tr>
+                            <td>{{quantity}}</td>
+                            <td>
+                                <div>
+                                    {{roomDescription}}
+                                </div>
+                                <div>
+                                    <span>
+                                        {{roomersQuantity}}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>{{unitPrice}}</td>
+                            <td>{{discount}}</td>
+                            <td>{{total}}</td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        <!-- summary -->
+        <div class="row" style="flex-direction: column;border-bottom: solid 2px #000000;">
+            <div class="containerLabelValue">
+                <div class="label">
+                    Sub Total: L.
+                </div>
+                <div class="value">
+                    {{invoiceSubTotal}}
+                </div>
+            </div>
+            <div class="containerLabelValue">
+                <div class="label">
+                    Importe Exento: L.
+                </div>
+                <div class="value">
+                    {{invoiceExentAmount}}
+                </div>
+            </div>
+            <div class="containerLabelValue">
+                <div class="label">
+                    Importe Exonerado: L.
+                </div>
+                <div class="value">
+                   {{invoiceExoneratedAmount}}
+                </div>
+            </div>
+            <div class="containerLabelValue">
+                <div class="label">
+                    Importe Gravable 15%: L.
+                </div>
+                <div class="value">
+                    {{invoiceTaxableAmount15}}
+                </div>
+            </div>
+            <div class="containerLabelValue">
+                <div class="label">
+                    Importe Gravable 18%: L.
+                </div>
+                <div class="value">
+                    {{invoiceTaxableAmount18}}
+                </div>
+            </div>
+            <div class="containerLabelValue">
+                <div class="label">
+                    I.S.V. 15%: L.
+                </div>
+                <div class="value">
+                    {{invoiceTaxAmount15}}
+                </div>
+            </div>
+            <div class="containerLabelValue">
+                <div class="label">
+                    I.S.V. 18%: L.
+                </div>
+                <div class="value">
+                    {{invoiceTaxAmount18}}
+                </div>
+            </div>
+            <div class="containerLabelValue">
+                <div class="label">
+                    I.S.T. 4%: L.
+                </div>
+                <div class="value">
+                    {{invoiceTaxAmount4}}
+                </div>
+            </div>
+        </div>
+        <div class="row" style="flex-direction: column;">
+            <div class="containerLabelValue">
+                <div class="label">
+                    Total: L.
+                </div>
+                <div class="value">
+                    {{invoiceTotal}}
+                </div>
+            </div>
+            <div class="containerWrittenValue">
+                <span>Son:</span>
+                <span><strong>{{totalWrittenValue}}</strong></span>
+            </div>
+            <div class="containerPaymentMethods">
+                <span class="headerLabel"><strong>SU FORMA DE PAGO FUE:</strong></span>
+                <div class="detailPaymentMethods">
+                    {{#each payments}}
+                        <div class="row">
+                            <span>{{paymentDescription}}</span><span>L.{{paymentAmount}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="detail">
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-3">Cant</div>
-        <div class="col-sm-6">Descripcion</div>
-        <div class="col-sm-3">Total</div>
-      </div>
-    </div>
-  </div>
-  <div class="footer">
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-6">Subtotal</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Descuento</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Importe Gravado</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Importe Exento</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">I.S.V. 15%</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">I.S.V. 18%</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Total</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Pago</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">Cambio</div>
-        <div class="col-sm-6">00.00</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">Cantidad en letras</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">No Orden Compra Exenta</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">No Registro Exonerado</div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">Registro SAG</div>
-      </div>      
-    </div>
-  </div>
-</div>
+
+
 </body>
+
 </html>

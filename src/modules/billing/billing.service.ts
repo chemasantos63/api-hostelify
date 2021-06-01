@@ -1,3 +1,7 @@
+import {
+  InvoiceBillingDetailDTO,
+  InvoiceBillingDTO,
+} from './invoiceBillingDTO';
 import { BillingRepository } from './billing.repository';
 import { Payment } from './../payment/entities/payment.entity';
 import { PaymentService } from './../payment/payment.service';
@@ -223,16 +227,85 @@ export class BillingService {
   }
 
   async createInvoicePdf(user: User, id: number): Promise<Buffer> {
-    const invoice = await this.billingRepository.findOne({ id });
+    const invoice = await this.billingRepository
+      .createQueryBuilder(`invoice`)
+      .innerJoinAndSelect(`invoice.permanences`, `permanences`)
+      .innerJoinAndSelect(`invoice.total`, `total`)
+      .innerJoinAndSelect(`invoice.payments`, `payments`)
+      .innerJoinAndSelect(`invoice.fiscalInformation`, `fiscalInformation`)
+      .innerJoinAndSelect(`permanences.reservation`, `reservation`)
+      .innerJoinAndSelect(`reservation.rooms`, `rooms`)
+      .innerJoinAndSelect(`rooms.type`, `roomTypes`)
+      .innerJoinAndSelect(`roomTypes.roomTypesDetail`,`roomTypeDetails`)
+      .innerJoinAndSelect(`reservation.customer`, `customer`)
+      .innerJoinAndSelect(`payments.paymentMethod`, `paymentMethods`)
+      .where(`invoice.id = ${id}`)
+      .getOne();
+
+    // const invoice = await this.billingRepository.findOne({ id });
+
+    this.logger.debug(JSON.stringify(invoice));
 
     if (!invoice) {
       throw new NotFoundException('La factura no existe');
     }
 
-    await this.generatePdf({
-      id: invoice.id,
-      invoiceTitle: `Esta es la primera factura de prueba`,
-    });
+    const invoicePermanence = invoice.permanences[0];
+    const permanenceReservation = invoicePermanence.reservation;
+    const reservationRooms = permanenceReservation.rooms;
+
+    const invoicePrintDTO: InvoiceBillingDTO = {
+      customerCode: `${permanenceReservation.customer.id}`.padStart(6, `0`),
+      customerIdentification: `${permanenceReservation.customer.documentNumber}`,
+      customerName: `${permanenceReservation.customer.name} ${permanenceReservation.customer.lastname}`,
+      invoiceCai: `${invoice.cai}`,
+      invoiceCondition: `CONTADO`,
+      invoiceDateAndTime: `${invoice.createdAt}`,
+      invoiceNumber: `${
+        invoice.fiscalInformation.prefix
+      }-${invoice.invoiceNumber.toString().padStart(8, `0`)}`,
+      invoiceSubTotal: invoice.total.subtotal.toString(),
+      invoiceTaxableAmount15: invoice.total.taxedAmount.toString(),
+      invoiceTaxAmount15: invoice.total.tax15Amount.toString(),
+      invoiceTaxableAmount18: `0.00`,
+      invoiceTaxAmount18: `0.00`,
+      invoiceTaxAmount4: invoice.total.tourismTax.toString(),
+      invoiceExentAmount: `0.00`,
+      invoiceExoneratedAmount: `0.00`,
+      invoiceTotal: invoice.total.total.toString(),
+      payments: [
+        ...invoice.payments.map((p) => ({
+          paymentDescription:
+            p.amount < 0 ? `SU CAMBIO ES` : p.paymentMethod.description,
+          paymentAmount: p.amount.toString(),
+        })),
+      ],
+      invoiceDetail: invoice.permanences[0].reservation.rooms.map((r) => {
+        const roomDetail: InvoiceBillingDetailDTO = {
+          quantity: 1,
+          roomDescription: r.type.type,
+          roomersQuantity: permanenceReservation.roomersQty,
+          unitPrice: r.type.roomTypesDetail
+            .filter(
+              (rt) => rt.roomersQuantity === +permanenceReservation.roomersQty,
+            )[0]
+            .price.toFixed(0),
+          discount: `0.00`,
+          total: r.type.roomTypesDetail
+            .filter(
+              (rt) => rt.roomersQuantity === +permanenceReservation.roomersQty,
+            )[0]
+            .price.toFixed(0),
+        };
+
+        return roomDetail;
+      }),
+      fiscalInformationDateValidTo: invoice.fiscalInformation.dateValidTo.toString(),
+      fiscalInformationRange: `${invoice.fiscalInformation.begin} -${invoice.fiscalInformation.end}`,
+      totalWrittenValue: `Esto es una prueba`,
+    };
+
+    await this.generatePdf(invoicePrintDTO);
 
     const filePath = `${path.join(__dirname, `..`, `..`, `public`)}/invoice_${
       invoice.id
@@ -264,7 +337,7 @@ export class BillingService {
     }
   }
 
-  private async generatePdf(data: any) {
+  private async generatePdf(data: InvoiceBillingDTO) {
     try {
       const htmlTemplate = await this.getTemplateHtml();
 
@@ -272,7 +345,65 @@ export class BillingService {
 
       const template = hb.compile(htmlTemplate, { strict: true });
 
-      const result = template(data);
+      const result = template({
+        invoiceCondition: `CONTADO`,
+        invoiceNumber: `001-001-01-00000001`,
+        invoiceDateAndTime: `27/05/202 13:38:00 PM`,
+        customerName: `Tony Alberto Stark Santos`,
+        customerCode: `00001`,
+        customerIdentification: `1401-1991-00501`,
+        invoiceCai: `FA53C4-E30E05-8A4FA0-DED878-39345D-5C`,
+        fiscalInformationDateValidTo: `01/01/2021`,
+        fiscalInformationRange: `001-001-01-00000001 - 001-001-01-99999999`,
+        invoiceDetail: [
+          {
+            quantity: 1,
+            roomDescription: `Habitacion Familiar`,
+            roomersQuantity: `2 Huespedes`,
+            unitPrice: `903.00`,
+            discount: `0.00`,
+            total: `903.00`,
+          },
+          {
+            quantity: 1,
+            roomDescription: `Habitacion Familiar`,
+            roomersQuantity: `2 Huespedes`,
+            unitPrice: `903.00`,
+            discount: `0.00`,
+            total: `903.00`,
+          },
+          {
+            quantity: 1,
+            roomDescription: `Habitacion Familiar`,
+            roomersQuantity: `2 Huespedes`,
+            unitPrice: `903.00`,
+            discount: `0.00`,
+            total: `903.00`,
+          },
+          {
+            quantity: 1,
+            roomDescription: `Habitacion Familiar`,
+            roomersQuantity: `2 Huespedes`,
+            unitPrice: `903.00`,
+            discount: `0.00`,
+            total: `903.00`,
+          },
+        ],
+        invoiceSubTotal: `1806.72`,
+        invoiceExentAmount: `0.00`,
+        invoiceExoneratedAmount: `0.00`,
+        invoiceTaxableAmount15: `1806.72`,
+        invoiceTaxableAmount18: `0.00`,
+        invoiceTaxAmount15: `271.01`,
+        invoiceTaxAmount18: `0.00`,
+        invoiceTaxAmount4: `72.27`,
+        invoiceTotal: `2150.00`,
+        totalWrittenValue: `Dos Mil Ciento Cicuenta y Uno Exactos`,
+        payments: [
+          { paymentDescription: `EFECTIVO`, paymentAmount: `2200.00` },
+          { paymentDescription: `SU CAMBIO ES`, paymentAmount: `50.00` },
+        ],
+      });
 
       const browser = await launch();
       const page = await browser.newPage();
@@ -280,13 +411,20 @@ export class BillingService {
       await page.setContent(result);
 
       const pathToSavePdf = path.resolve(
-        `${path.join(__dirname, `..`, `..`, `public`)}/invoice_${data.id}.pdf`,
+        `${path.join(__dirname, `..`, `..`, `public`)}/invoice_${
+          data.invoiceNumber
+        }.pdf`,
       );
-
+      // await page.emulateMediaType('screen');
       await page.pdf({
         path: pathToSavePdf,
         printBackground: true,
-        width: `8cm`,
+        width: `72.1mm`,
+        scale: 1,
+        margin: {
+          left: `0mm`,
+          right: `2mm`,
+        },
       });
 
       await browser.close();
