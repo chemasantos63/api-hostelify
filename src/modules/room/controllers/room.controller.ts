@@ -1,3 +1,4 @@
+import { AvailableRoomsFilterDto } from './../dto/available-rooms-filter-input';
 import {
   Body,
   Controller,
@@ -34,15 +35,9 @@ export class RoomController {
   @Get(`available`)
   @TransformClassToPlain()
   async getAvailableRooms(
-    @Query() query: { toDate: string; fromDate: string },
-  ): Promise<void> {
-    //const room = await this.roomService.get(id);
-    console.log(query);
-    const { fromDate, toDate } = query;
-    const result = this.roomService.getAvailableRooms(fromDate, toDate);
-    console.log(result);
-    
-    //return room;
+    @Query() query: AvailableRoomsFilterDto,
+  ): Promise<Room[]> {
+    return await this.roomService.getAvailableRooms(query);
   }
 
   @Get(`:id`)

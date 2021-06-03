@@ -51,6 +51,9 @@ export class Billing extends BaseEntity {
   @Column({ type: `varchar`, nullable: false, default: 'active' })
   status: string;
 
+  @Column({ type: `varchar`, nullable: false })
+  condition: string;
+
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;
 

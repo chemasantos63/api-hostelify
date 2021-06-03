@@ -1,3 +1,4 @@
+import { AvailableRoomsFilterDto } from './../dto/available-rooms-filter-input';
 import { CreateRoomDto } from '../dto/create-room-input';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Room } from '../entities/room.entity';
@@ -90,31 +91,22 @@ export class RoomService {
     await room.save();
   }
 
-  async getAvailableRooms(fromDate: string, toDate: string): Promise<Room[]> {
-    const reservationsOnDateRange = getManager()
+  async getAvailableRooms(filter: AvailableRoomsFilterDto): Promise<Room[]> {
+    const reservationsOnDateRange = this.roomRepository.manager.connection
       .createQueryBuilder()
       .select('rr.roomsId')
       .from('reservations', 'rs')
       .innerJoin('reservations_rooms', 'rr', 'rs.id = rr.reservationsId')
-      .where('rs.fromDate >= :fromDate AND rs.toDate <= :toDate ', {
-        fromDate,
-        toDate,
-      })
-      .orWhere('rs.toDate > :fromDate AND rs.toDate < :toDate', {
-        fromDate,
-        toDate,
-      })
-      .orWhere('rs.fromDate > :fromDate AND rs.fromDate < :toDate', {
-        fromDate,
-        toDate,
-      });
+      .where('rs.fromDate >= :fromDate AND rs.toDate <= :toDate ')
+      .orWhere('rs.toDate > :fromDate AND rs.toDate < :toDate')
+      .orWhere('rs.fromDate > :fromDate AND rs.fromDate < :toDate')
+      .setParameters(filter);
 
-    const availableRooms = getManager()
-      .createQueryBuilder()
-      .select('*')
-      .from('rooms', 'r')
-      .where(`r.id NOT IN (${reservationsOnDateRange.getQuery()})`);
+    const availableRooms = this.roomRepository.manager.connection
+      .createQueryBuilder(Room, 'r')
+      .where(`r.id NOT IN (${reservationsOnDateRange.getQuery()})`)
+      .setParameters(filter);
 
-    return await availableRooms.getMany() as Room[];
+    return await availableRooms.getMany();
   }
 }

@@ -236,7 +236,7 @@ export class BillingService {
       .innerJoinAndSelect(`permanences.reservation`, `reservation`)
       .innerJoinAndSelect(`reservation.rooms`, `rooms`)
       .innerJoinAndSelect(`rooms.type`, `roomTypes`)
-      .innerJoinAndSelect(`roomTypes.roomTypesDetail`,`roomTypeDetails`)
+      .innerJoinAndSelect(`roomTypes.roomTypesDetail`, `roomTypeDetails`)
       .innerJoinAndSelect(`reservation.customer`, `customer`)
       .innerJoinAndSelect(`payments.paymentMethod`, `paymentMethods`)
       .where(`invoice.id = ${id}`)
