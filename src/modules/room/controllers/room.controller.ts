@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -28,6 +29,20 @@ export class RoomController {
     const rooms = await this.roomService.getAll();
 
     return rooms;
+  }
+
+  @Get(`available`)
+  @TransformClassToPlain()
+  async getAvailableRooms(
+    @Query() query: { toDate: string; fromDate: string },
+  ): Promise<void> {
+    //const room = await this.roomService.get(id);
+    console.log(query);
+    const { fromDate, toDate } = query;
+    const result = this.roomService.getAvailableRooms(fromDate, toDate);
+    console.log(result);
+    
+    //return room;
   }
 
   @Get(`:id`)

@@ -5,8 +5,8 @@ import { RoomRepository } from '../repositories/room.repository';
 import { RoomTypeRepository } from '../repositories/room.types.repository';
 import { UpdateRoomDto } from '../dto/update-room-input';
 import { RoomStatusRepository } from '../repositories/room.status.repository';
-import { Not } from 'typeorm';
-
+import { getRepository, Not } from 'typeorm';
+import { getManager } from 'typeorm';
 @Injectable()
 export class RoomService {
   constructor(
@@ -88,5 +88,33 @@ export class RoomService {
     });
 
     await room.save();
+  }
+
+  async getAvailableRooms(fromDate: string, toDate: string): Promise<Room[]> {
+    const reservationsOnDateRange = getManager()
+      .createQueryBuilder()
+      .select('rr.roomsId')
+      .from('reservations', 'rs')
+      .innerJoin('reservations_rooms', 'rr', 'rs.id = rr.reservationsId')
+      .where('rs.fromDate >= :fromDate AND rs.toDate <= :toDate ', {
+        fromDate,
+        toDate,
+      })
+      .orWhere('rs.toDate > :fromDate AND rs.toDate < :toDate', {
+        fromDate,
+        toDate,
+      })
+      .orWhere('rs.fromDate > :fromDate AND rs.fromDate < :toDate', {
+        fromDate,
+        toDate,
+      });
+
+    const availableRooms = getManager()
+      .createQueryBuilder()
+      .select('*')
+      .from('rooms', 'r')
+      .where(`r.id NOT IN (${reservationsOnDateRange.getQuery()})`);
+
+    return await availableRooms.getMany() as Room[];
   }
 }
