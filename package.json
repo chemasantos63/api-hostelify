@@ -35,6 +35,7 @@
     "bignumber.js": "^9.0.1",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
+    "dayjs": "^1.10.5",
     "handlebars": "^4.7.7",
     "jsonwebtoken": "^8.5.1",
     "passport": "^0.4.1",
@@ -45,7 +46,8 @@
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
     "ts-mapper": "^1.2.4",
-    "typeorm": "^0.2.30"
+    "typeorm": "^0.2.30",
+    "written-number": "^0.9.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.1",

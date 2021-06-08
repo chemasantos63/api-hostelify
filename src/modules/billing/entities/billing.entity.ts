@@ -1,3 +1,4 @@
+import { Invoice } from './invoice.entity';
 import { FiscalInformation } from './../../fiscal-information/entities/fiscal-information.entity';
 import { Total } from './../../total/entities/total.entity';
 import { Payment } from './../../payment/entities/payment.entity';
@@ -33,6 +34,14 @@ export class Billing extends BaseEntity {
   })
   @JoinColumn({ name: `total_id` })
   total: Total;
+
+  @OneToOne((type) => Invoice, {
+    cascade: true,
+    nullable: false,
+    eager: true,
+  })
+  @JoinColumn({ name: `invoice_report_id` })
+  invoiceReport: Invoice;
 
   @ManyToOne((type) => FiscalInformation, {
     cascade: true,

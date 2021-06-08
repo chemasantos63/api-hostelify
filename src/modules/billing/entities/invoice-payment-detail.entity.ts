@@ -4,7 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -21,8 +21,7 @@ export class InvoicePaymentDetail extends BaseEntity {
   @Column({ type: `varchar`, nullable: false })
   paymentAmount: string;
 
-  @ManyToMany(() => Invoice, (invoice) => invoice.payments)
-  @JoinColumn({ name: `invoiceId` })
+  @ManyToOne(() => Invoice, (invoice) => invoice.payments)
   invoice: Invoice;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })

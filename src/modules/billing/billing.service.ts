@@ -1,7 +1,10 @@
+import { InvoiceDetail } from './entities/invoice-detail.entity';
+import { InvoicePaymentDetail } from './entities/invoice-payment-detail.entity';
+import { Invoice } from './entities/invoice.entity';
 import {
   InvoiceBillingDetailDTO,
   InvoiceBillingDTO,
-} from './invoiceBillingDTO';
+} from './dto/invoiceBillingDTO';
 import { BillingRepository } from './billing.repository';
 import { Payment } from './../payment/entities/payment.entity';
 import { PaymentService } from './../payment/payment.service';
@@ -28,7 +31,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as utils from 'util';
 import * as hb from 'handlebars';
+import * as writtenNumber from 'written-number';
+import * as dayjs from 'dayjs';
 import { launch } from 'puppeteer';
+import { Reservation } from '../reservation/entities/reservation.entity';
+import { Room } from '../room/entities/room.entity';
 
 @Injectable()
 export class BillingService {
@@ -43,7 +50,9 @@ export class BillingService {
     private readonly paymentService: PaymentService,
     private readonly connection: Connection,
     private readonly billingRepository: BillingRepository,
-  ) {}
+  ) {
+    writtenNumber.defaults.lang = 'es';
+  }
 
   async create(createBillingDto: CreateBillingDto): Promise<Billing> {
     const queryRunner = this.connection.createQueryRunner();
@@ -67,6 +76,8 @@ export class BillingService {
 
       const invoice: Billing = this.initBill(fiscalInformation);
 
+      invoice.condition = createBillingDto.condition;
+
       await this.findPermanencesByDto(createBillingDto, invoice);
 
       await this.createBillingTotals(invoice, manager);
@@ -75,9 +86,16 @@ export class BillingService {
 
       await this.createBillingPayments(createBillingDto, manager, invoice);
 
-      this.logger.verbose(`Invoice Object: ${JSON.stringify(invoice)}`);
+      const invoiceReport = this.parseInvoiceDataToReport(invoice);
+
+      invoiceReport.detail = await manager.save(invoiceReport.detail);
+      invoiceReport.payments = await manager.save(invoiceReport.payments);
+
+      invoice.invoiceReport = await manager.save(invoiceReport);
 
       await manager.save(invoice);
+
+      this.logger.verbose(`Invoice Object: ${JSON.stringify(invoice)}`);
 
       await this.updateCurrentNumberAndRangeFiscalInformation(
         fiscalInformation,
@@ -214,8 +232,8 @@ export class BillingService {
     return await billings;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} billing`;
+  async findOne(id: number): Promise<Billing> {
+    return await this.billingRepository.findOne({ id });
   }
 
   update(id: number, updateBillingDto: UpdateBillingDto) {
@@ -227,88 +245,18 @@ export class BillingService {
   }
 
   async createInvoicePdf(user: User, id: number): Promise<Buffer> {
-    const invoice = await this.billingRepository
-      .createQueryBuilder(`invoice`)
-      .innerJoinAndSelect(`invoice.permanences`, `permanences`)
-      .innerJoinAndSelect(`invoice.total`, `total`)
-      .innerJoinAndSelect(`invoice.payments`, `payments`)
-      .innerJoinAndSelect(`invoice.fiscalInformation`, `fiscalInformation`)
-      .innerJoinAndSelect(`permanences.reservation`, `reservation`)
-      .innerJoinAndSelect(`reservation.rooms`, `rooms`)
-      .innerJoinAndSelect(`rooms.type`, `roomTypes`)
-      .innerJoinAndSelect(`roomTypes.roomTypesDetail`, `roomTypeDetails`)
-      .innerJoinAndSelect(`reservation.customer`, `customer`)
-      .innerJoinAndSelect(`payments.paymentMethod`, `paymentMethods`)
-      .where(`invoice.id = ${id}`)
-      .getOne();
-
-    // const invoice = await this.billingRepository.findOne({ id });
-
-    this.logger.debug(JSON.stringify(invoice));
+    const invoice = await this.findOne(id);
 
     if (!invoice) {
       throw new NotFoundException('La factura no existe');
     }
 
-    const invoicePermanence = invoice.permanences[0];
-    const permanenceReservation = invoicePermanence.reservation;
-    const reservationRooms = permanenceReservation.rooms;
+    this.logger.debug(JSON.stringify(invoice));
 
-    const invoicePrintDTO: InvoiceBillingDTO = {
-      customerCode: `${permanenceReservation.customer.id}`.padStart(6, `0`),
-      customerIdentification: `${permanenceReservation.customer.documentNumber}`,
-      customerName: `${permanenceReservation.customer.name} ${permanenceReservation.customer.lastname}`,
-      invoiceCai: `${invoice.cai}`,
-      invoiceCondition: `CONTADO`,
-      invoiceDateAndTime: `${invoice.createdAt}`,
-      invoiceNumber: `${
-        invoice.fiscalInformation.prefix
-      }-${invoice.invoiceNumber.toString().padStart(8, `0`)}`,
-      invoiceSubTotal: invoice.total.subtotal.toString(),
-      invoiceTaxableAmount15: invoice.total.taxedAmount.toString(),
-      invoiceTaxAmount15: invoice.total.tax15Amount.toString(),
-      invoiceTaxableAmount18: `0.00`,
-      invoiceTaxAmount18: `0.00`,
-      invoiceTaxAmount4: invoice.total.tourismTax.toString(),
-      invoiceExentAmount: `0.00`,
-      invoiceExoneratedAmount: `0.00`,
-      invoiceTotal: invoice.total.total.toString(),
-      payments: [
-        ...invoice.payments.map((p) => ({
-          paymentDescription:
-            p.amount < 0 ? `SU CAMBIO ES` : p.paymentMethod.description,
-          paymentAmount: p.amount.toString(),
-        })),
-      ],
-      invoiceDetail: invoice.permanences[0].reservation.rooms.map((r) => {
-        const roomDetail: InvoiceBillingDetailDTO = {
-          quantity: 1,
-          roomDescription: r.type.type,
-          roomersQuantity: permanenceReservation.roomersQty,
-          unitPrice: r.type.roomTypesDetail
-            .filter(
-              (rt) => rt.roomersQuantity === +permanenceReservation.roomersQty,
-            )[0]
-            .price.toFixed(0),
-          discount: `0.00`,
-          total: r.type.roomTypesDetail
-            .filter(
-              (rt) => rt.roomersQuantity === +permanenceReservation.roomersQty,
-            )[0]
-            .price.toFixed(0),
-        };
-
-        return roomDetail;
-      }),
-      fiscalInformationDateValidTo: invoice.fiscalInformation.dateValidTo.toString(),
-      fiscalInformationRange: `${invoice.fiscalInformation.begin} -${invoice.fiscalInformation.end}`,
-      totalWrittenValue: `Esto es una prueba`,
-    };
-
-    await this.generatePdf(invoicePrintDTO);
+    await this.generatePdf(invoice.invoiceReport);
 
     const filePath = `${path.join(__dirname, `..`, `..`, `public`)}/invoice_${
-      invoice.id
+      invoice.invoiceReport.invoiceNumber
     }.pdf`;
 
     const pdf = await new Promise<Buffer>((resolve, reject) => {
@@ -324,6 +272,48 @@ export class BillingService {
     return pdf;
   }
 
+  private getInvoiceReportDetail(
+    invoice: Billing,
+    permanenceReservation: Reservation,
+  ): Partial<InvoiceDetail>[] {
+    return invoice.permanences[0].reservation.rooms.map((r) => {
+      const unitPrice = this.getUnitPriceFromReservation(
+        r,
+        permanenceReservation,
+      ).toFixed(1);
+
+      const roomDetail: Partial<InvoiceDetail> = {
+        quantity: `1`,
+        description: `Habitacion ${r.type.type}`,
+        roomersQuantity: `Huespedes ${permanenceReservation.roomersQty}`,
+        unitPrice: Number(unitPrice).toFixed(2),
+        discount: `0.00`,
+        total: Number(unitPrice).toFixed(2),
+      };
+
+      return roomDetail;
+    });
+  }
+
+  private getUnitPriceFromReservation(
+    r: Room,
+    permanenceReservation: Reservation,
+  ): number {
+    return +r.type.roomTypesDetail.filter(
+      (rt) => rt.roomersQuantity === +permanenceReservation.roomersQty,
+    )[0].price;
+  }
+
+  private buildPaymentsDescription(
+    invoice: Billing,
+  ): Partial<InvoicePaymentDetail>[] {
+    return invoice.payments.map((p) => ({
+      paymentDescription:
+        p.amount < 0 ? `SU CAMBIO ES` : p.paymentMethod.description,
+      paymentAmount: Math.abs(p.amount).toString(),
+    }));
+  }
+
   private async getTemplateHtml(): Promise<string> {
     this.logger.verbose(`Loading template file in memory`);
 
@@ -337,7 +327,7 @@ export class BillingService {
     }
   }
 
-  private async generatePdf(data: InvoiceBillingDTO) {
+  private async generatePdf(data: Invoice) {
     try {
       const htmlTemplate = await this.getTemplateHtml();
 
@@ -345,65 +335,67 @@ export class BillingService {
 
       const template = hb.compile(htmlTemplate, { strict: true });
 
-      const result = template({
-        invoiceCondition: `CONTADO`,
-        invoiceNumber: `001-001-01-00000001`,
-        invoiceDateAndTime: `27/05/202 13:38:00 PM`,
-        customerName: `Tony Alberto Stark Santos`,
-        customerCode: `00001`,
-        customerIdentification: `1401-1991-00501`,
-        invoiceCai: `FA53C4-E30E05-8A4FA0-DED878-39345D-5C`,
-        fiscalInformationDateValidTo: `01/01/2021`,
-        fiscalInformationRange: `001-001-01-00000001 - 001-001-01-99999999`,
-        invoiceDetail: [
-          {
-            quantity: 1,
-            roomDescription: `Habitacion Familiar`,
-            roomersQuantity: `2 Huespedes`,
-            unitPrice: `903.00`,
-            discount: `0.00`,
-            total: `903.00`,
-          },
-          {
-            quantity: 1,
-            roomDescription: `Habitacion Familiar`,
-            roomersQuantity: `2 Huespedes`,
-            unitPrice: `903.00`,
-            discount: `0.00`,
-            total: `903.00`,
-          },
-          {
-            quantity: 1,
-            roomDescription: `Habitacion Familiar`,
-            roomersQuantity: `2 Huespedes`,
-            unitPrice: `903.00`,
-            discount: `0.00`,
-            total: `903.00`,
-          },
-          {
-            quantity: 1,
-            roomDescription: `Habitacion Familiar`,
-            roomersQuantity: `2 Huespedes`,
-            unitPrice: `903.00`,
-            discount: `0.00`,
-            total: `903.00`,
-          },
-        ],
-        invoiceSubTotal: `1806.72`,
-        invoiceExentAmount: `0.00`,
-        invoiceExoneratedAmount: `0.00`,
-        invoiceTaxableAmount15: `1806.72`,
-        invoiceTaxableAmount18: `0.00`,
-        invoiceTaxAmount15: `271.01`,
-        invoiceTaxAmount18: `0.00`,
-        invoiceTaxAmount4: `72.27`,
-        invoiceTotal: `2150.00`,
-        totalWrittenValue: `Dos Mil Ciento Cicuenta y Uno Exactos`,
-        payments: [
-          { paymentDescription: `EFECTIVO`, paymentAmount: `2200.00` },
-          { paymentDescription: `SU CAMBIO ES`, paymentAmount: `50.00` },
-        ],
-      });
+      // const result = template({
+      //   invoiceCondition: `CONTADO`,
+      //   invoiceNumber: `001-001-01-00000001`,
+      //   invoiceDateAndTime: `27/05/202 13:38:00 PM`,
+      //   customerName: `Tony Alberto Stark Santos`,
+      //   customerCode: `00001`,
+      //   customerIdentification: `1401-1991-00501`,
+      //   invoiceCai: `FA53C4-E30E05-8A4FA0-DED878-39345D-5C`,
+      //   fiscalInformationDateValidTo: `01/01/2021`,
+      //   fiscalInformationRange: `001-001-01-00000001 - 001-001-01-99999999`,
+      //   invoiceDetail: [
+      //     {
+      //       quantity: 1,
+      //       roomDescription: `Habitacion Familiar`,
+      //       roomersQuantity: `2 Huespedes`,
+      //       unitPrice: `903.00`,
+      //       discount: `0.00`,
+      //       total: `903.00`,
+      //     },
+      //     {
+      //       quantity: 1,
+      //       roomDescription: `Habitacion Familiar`,
+      //       roomersQuantity: `2 Huespedes`,
+      //       unitPrice: `903.00`,
+      //       discount: `0.00`,
+      //       total: `903.00`,
+      //     },
+      //     {
+      //       quantity: 1,
+      //       roomDescription: `Habitacion Familiar`,
+      //       roomersQuantity: `2 Huespedes`,
+      //       unitPrice: `903.00`,
+      //       discount: `0.00`,
+      //       total: `903.00`,
+      //     },
+      //     {
+      //       quantity: 1,
+      //       roomDescription: `Habitacion Familiar`,
+      //       roomersQuantity: `2 Huespedes`,
+      //       unitPrice: `903.00`,
+      //       discount: `0.00`,
+      //       total: `903.00`,
+      //     },
+      //   ],
+      //   invoiceSubTotal: `1806.72`,
+      //   invoiceExentAmount: `0.00`,
+      //   invoiceExoneratedAmount: `0.00`,
+      //   invoiceTaxableAmount15: `1806.72`,
+      //   invoiceTaxableAmount18: `0.00`,
+      //   invoiceTaxAmount15: `271.01`,
+      //   invoiceTaxAmount18: `0.00`,
+      //   invoiceTaxAmount4: `72.27`,
+      //   invoiceTotal: `2150.00`,
+      //   totalWrittenValue: `Dos Mil Ciento Cicuenta y Uno Exactos`,
+      //   payments: [
+      //     { paymentDescription: `EFECTIVO`, paymentAmount: `2200.00` },
+      //     { paymentDescription: `SU CAMBIO ES`, paymentAmount: `50.00` },
+      //   ],
+      // });
+
+      const result = template(data);
 
       const browser = await launch();
       const page = await browser.newPage();
@@ -434,5 +426,118 @@ export class BillingService {
       this.logger.error(`An Error has ocurred generating PDF`, e.stack);
       throw e;
     }
+  }
+
+  private parseInvoiceDataToReport(invoice: Billing): Invoice {
+    const invoiceReport = new Invoice({
+      customerCode: this.padCustomerCodeWithZeros(invoice),
+      customerIdentification: invoice.permanences[0].customer.documentNumber,
+      customerName: this.getCustomerNameFromInvoice(invoice),
+      invoiceCai: invoice.fiscalInformation.cai,
+      invoiceCondition: invoice.condition,
+      invoiceDateAndTime: dayjs(invoice.createdAt).format(
+        'DD/MM/YYYY hh:mm:ss a',
+      ),
+      invoiceNumber: this.getInvoiceNumberWithCai(
+        invoice.fiscalInformation.prefix,
+        invoice.invoiceNumber,
+      ),
+      invoiceSubtotal: Number(invoice.total.subtotal).toFixed(2),
+      invoiceTaxableAmount15: Number(invoice.total.taxedAmount).toFixed(2),
+      invoiceTaxableAmount18: `0.00`,
+      invoiceTaxAmount15: Number(invoice.total.tax15Amount).toFixed(2),
+      invoiceTaxAmount18: `0. 00`,
+      invoiceTaxAmount4: Number(invoice.total.tourismTax).toFixed(2),
+      invoiceExentAmount: `0.00`,
+      invoiceExoneratedAmount: `0.00`,
+      invoiceTotal: Number(invoice.total.total).toFixed(2),
+      fiscalInformationDateValidTo: invoice.fiscalInformation.dateValidTo.toString(),
+      fiscalInformationRange: this.getRangeCaiInvoiceNumber(invoice),
+      totalWrittenValue: this.parseNumberToWords(invoice.total.total),
+    });
+
+    invoiceReport.payments = [];
+    invoiceReport.detail = [];
+
+    const paymentsDetails = this.buildPaymentsDescription(invoice);
+
+    paymentsDetails.forEach((p) => {
+      invoiceReport.payments = [
+        ...invoiceReport.payments,
+        new InvoicePaymentDetail(p),
+      ];
+    });
+
+    const invoiceDetail = this.getInvoiceReportDetail(
+      invoice,
+      invoice.permanences[0].reservation,
+    );
+
+    invoiceDetail.forEach((d) => {
+      invoiceReport.detail = [...invoiceReport.detail, new InvoiceDetail(d)];
+    });
+
+    return invoiceReport;
+  }
+
+  private parseNumberToWords(num: number): string {
+    let parsedNumber = '';
+
+    const intPart = Math.trunc(num);
+    const floatPart = Number((num - intPart).toFixed(2));
+
+    parsedNumber = writtenNumber(num);
+
+    return `${parsedNumber} LEMPIRAS CON ${this.zfill(
+      floatPart * 100,
+      2,
+    )}/100 CENTAVOS`.toUpperCase();
+  }
+
+  private zfill(numberToFill: number, width: number) {
+    const numberOutput = Math.abs(numberToFill);
+    const length = numberToFill.toString().length;
+    const zero = '0';
+
+    if (width <= length) {
+      if (numberToFill < 0) {
+        return '-' + numberOutput.toString();
+      } else {
+        return numberOutput.toString();
+      }
+    } else {
+      if (numberToFill < 0) {
+        return '-' + zero.repeat(width - length) + numberOutput.toString();
+      } else {
+        return zero.repeat(width - length) + numberOutput.toString();
+      }
+    }
+  }
+
+  private getRangeCaiInvoiceNumber(invoice: Billing): string {
+    return `${this.getInvoiceNumberWithCai(
+      invoice.fiscalInformation.prefix,
+      invoice.fiscalInformation.begin,
+    )} - ${this.getInvoiceNumberWithCai(
+      invoice.fiscalInformation.prefix,
+      invoice.fiscalInformation.end,
+    )}`;
+  }
+
+  private getInvoiceNumberWithCai(
+    caiPrefix: string,
+    invoiceNumber: number,
+  ): string {
+    return `${caiPrefix}${invoiceNumber.toString().padStart(8, `0`)}`;
+  }
+
+  private getCustomerNameFromInvoice(invoice: Billing): string {
+    return `${invoice.permanences[0].customer.name} ${invoice.permanences[0].customer.lastname}`;
+  }
+
+  private padCustomerCodeWithZeros(invoice: Billing): string {
+    return invoice.permanences[0].reservation.customer.id
+      .toFixed(0)
+      .padStart(6, `0`);
   }
 }

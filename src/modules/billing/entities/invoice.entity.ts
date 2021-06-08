@@ -1,3 +1,4 @@
+import { Billing } from './billing.entity';
 import {
   BaseEntity,
   Column,
@@ -72,10 +73,16 @@ export class Invoice extends BaseEntity {
   @Column({ type: `varchar`, nullable: true })
   totalWrittenValue: string;
 
-  @OneToMany(() => InvoiceDetail, (invoiceDetail) => invoiceDetail.invoice)
+  @OneToMany(() => InvoiceDetail, (invoiceDetail) => invoiceDetail.invoice, {
+    eager: true,
+  })
   detail: InvoiceDetail[];
 
-  @OneToMany(() => InvoiceDetail, (invoiceDetail) => invoiceDetail.invoice)
+  @OneToMany(
+    () => InvoicePaymentDetail,
+    (invoicePaymentDetail) => invoicePaymentDetail.invoice,
+    { eager: true },
+  )
   payments: InvoicePaymentDetail[];
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
