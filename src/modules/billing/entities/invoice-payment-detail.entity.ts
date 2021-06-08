@@ -10,30 +10,18 @@ import {
 } from 'typeorm';
 import { Invoice } from './invoice.entity';
 
-@Entity(`invoices_report_detail`)
-export class InvoiceDetail extends BaseEntity {
+@Entity(`invoices_report_detail_payments`)
+export class InvoicePaymentDetail extends BaseEntity {
   @PrimaryGeneratedColumn(`increment`)
   id: number;
 
   @Column({ type: `varchar`, nullable: false })
-  quantity: string;
+  paymentDescription: string;
 
   @Column({ type: `varchar`, nullable: false })
-  description: string;
+  paymentAmount: string;
 
-  @Column({ type: `varchar`, nullable: false })
-  roomersQuantity: string;
-
-  @Column({ type: `varchar`, nullable: false })
-  unitPrice: string;
-
-  @Column({ type: `varchar`, nullable: false })
-  discount: string;
-
-  @Column({ type: `varchar`, nullable: false })
-  total: string;
-
-  @ManyToMany(() => Invoice, (invoice) => invoice.detail)
+  @ManyToMany(() => Invoice, (invoice) => invoice.payments)
   @JoinColumn({ name: `invoiceId` })
   invoice: Invoice;
 
@@ -43,7 +31,7 @@ export class InvoiceDetail extends BaseEntity {
   @UpdateDateColumn({ type: `timestamp`, name: `updated_at` })
   updatedAt: Date;
 
-  constructor(partial?: Partial<InvoiceDetail>) {
+  constructor(partial?: Partial<InvoicePaymentDetail>) {
     super();
     if (partial) {
       Object.assign(this, partial);

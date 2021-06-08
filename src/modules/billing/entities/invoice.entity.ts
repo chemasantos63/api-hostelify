@@ -1,14 +1,14 @@
-import { InvoiceDetail } from './invoice-detail.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { InvoiceDetail } from './invoice-detail.entity';
+import { InvoicePaymentDetail } from './invoice-payment-detail.entity';
 
 @Entity(`invoices_report`)
 export class Invoice extends BaseEntity {
@@ -63,9 +63,20 @@ export class Invoice extends BaseEntity {
   @Column({ type: `varchar`, nullable: true })
   invoiceTotal: string;
 
+  @Column({ type: `varchar`, nullable: true })
+  fiscalInformationDateValidTo: string;
+
+  @Column({ type: `varchar`, nullable: true })
+  fiscalInformationRange: string;
+
+  @Column({ type: `varchar`, nullable: true })
+  totalWrittenValue: string;
+
   @OneToMany(() => InvoiceDetail, (invoiceDetail) => invoiceDetail.invoice)
-  @JoinColumn({ name: `detail_id` })
   detail: InvoiceDetail[];
+
+  @OneToMany(() => InvoiceDetail, (invoiceDetail) => invoiceDetail.invoice)
+  payments: InvoicePaymentDetail[];
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;
