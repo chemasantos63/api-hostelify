@@ -97,7 +97,7 @@ export class BillingService {
 
       for (const permanence of invoice.permanences) {
         for (const room of permanence.reservation.rooms) {
-          await this.roomService.setRoomStatus(room, `Ocupada`, manager);
+          await this.roomService.setRoomStatus(room, `Sucia`, manager);
         }
       }
 
