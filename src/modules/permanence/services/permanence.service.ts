@@ -53,7 +53,7 @@ export class PermanenceService {
     permanence.userCheckIn = user;
 
     for (const room of reservation.rooms) {
-      await this.roomService.setRoomAsTaken(room);
+      await this.roomService.setRoomStatus(room, `Ocupada`);
     }
 
     return permanence.save();

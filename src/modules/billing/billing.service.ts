@@ -1,3 +1,4 @@
+import { RoomService } from './../room/services/room.service';
 import { InvoiceDetail } from './entities/invoice-detail.entity';
 import { InvoicePaymentDetail } from './entities/invoice-payment-detail.entity';
 import { Invoice } from './entities/invoice.entity';
@@ -50,6 +51,7 @@ export class BillingService {
     private readonly paymentService: PaymentService,
     private readonly connection: Connection,
     private readonly billingRepository: BillingRepository,
+    private readonly roomService: RoomService,
   ) {
     writtenNumber.defaults.lang = 'es';
   }
@@ -93,6 +95,12 @@ export class BillingService {
 
       invoice.invoiceReport = await manager.save(invoiceReport);
 
+      for (const permanence of invoice.permanences) {
+        for (const room of permanence.reservation.rooms) {
+          await this.roomService.setRoomStatus(room, `Ocupada`, manager);
+        }
+      }
+
       await manager.save(invoice);
 
       this.logger.verbose(`Invoice Object: ${JSON.stringify(invoice)}`);
@@ -115,106 +123,6 @@ export class BillingService {
     } finally {
       await queryRunner.release();
     }
-  }
-
-  private initBill(fiscalInformation: FiscalInformation) {
-    const invoice: Billing = new Billing({
-      fiscalInformation,
-      cai: fiscalInformation.cai,
-      invoiceNumber: fiscalInformation.currentNumber,
-    });
-
-    invoice.permanences = [];
-    invoice.payments = [];
-    return invoice;
-  }
-
-  private async findPermanencesByDto(
-    createBillingDto: CreateBillingDto,
-    invoice: Billing,
-  ) {
-    for (const permanenceId of createBillingDto.permanencesId) {
-      const permanence = await this.permanenceService.get(permanenceId);
-      this.validatePermanence(invoice, permanence);
-      invoice.permanences = [...invoice.permanences, permanence];
-    }
-  }
-
-  private validatePermanence(invoice: Billing, permanence: Permanence) {
-    this.validateCustomerFromPermanence(invoice, permanence);
-    this.validatePermanenceAlreadyInvoiced(permanence);
-  }
-
-  private validatePermanenceAlreadyInvoiced(permanence: Permanence) {
-    if (permanence.invoice) {
-      throw new ConflictException(
-        `La permanencia ${permanence.id} ya cuenta con una factura.`,
-      );
-    }
-  }
-
-  private validateCustomerFromPermanence(
-    invoice: Billing,
-    permanence: Permanence,
-  ) {
-    if (invoice.permanences.filter((p) => p.id !== permanence.id).length > 0) {
-      throw new ConflictException(
-        `Las permanencias deben de pertenecer el mismo cliente.`,
-      );
-    }
-  }
-
-  private async createBillingTotals(
-    invoice?: Billing,
-    manager?: EntityManager,
-  ) {
-    const total = await this.totalService.create(
-      {
-        permanences: invoice.permanences,
-      },
-      manager,
-    );
-
-    invoice.total = total;
-    return total;
-  }
-
-  private validatePaymentsTotal(
-    createBillingDto: CreateBillingDto,
-    total: Total,
-  ) {
-    const paymentsTotal = createBillingDto.payments.reduce(
-      (acc, act) => acc + +act.amount,
-      0,
-    );
-
-    if (total.total > paymentsTotal) {
-      throw new ConflictException(
-        `La cantidad de pagos no coincide con al cantidad total de la factura. Total factura: ${total.total} - Total pagos: ${paymentsTotal}.`,
-      );
-    }
-  }
-
-  private async createBillingPayments(
-    createBillingDto: CreateBillingDto,
-    manager,
-    invoice: Billing,
-  ) {
-    for (const paymentDto of createBillingDto.payments) {
-      const payment = await this.paymentService.create(paymentDto, manager);
-
-      invoice.payments = [...invoice.payments, payment];
-    }
-  }
-
-  private async updateCurrentNumberAndRangeFiscalInformation(
-    fiscalInformation: FiscalInformation,
-    manager,
-  ) {
-    fiscalInformation.currentNumber += 1;
-    fiscalInformation.range -= 1;
-
-    await manager.save(fiscalInformation);
   }
 
   async findAll(): Promise<Billing[]> {
@@ -334,66 +242,6 @@ export class BillingService {
       this.logger.verbose(`Compiling the template with handlebars`);
 
       const template = hb.compile(htmlTemplate, { strict: true });
-
-      // const result = template({
-      //   invoiceCondition: `CONTADO`,
-      //   invoiceNumber: `001-001-01-00000001`,
-      //   invoiceDateAndTime: `27/05/202 13:38:00 PM`,
-      //   customerName: `Tony Alberto Stark Santos`,
-      //   customerCode: `00001`,
-      //   customerIdentification: `1401-1991-00501`,
-      //   invoiceCai: `FA53C4-E30E05-8A4FA0-DED878-39345D-5C`,
-      //   fiscalInformationDateValidTo: `01/01/2021`,
-      //   fiscalInformationRange: `001-001-01-00000001 - 001-001-01-99999999`,
-      //   invoiceDetail: [
-      //     {
-      //       quantity: 1,
-      //       roomDescription: `Habitacion Familiar`,
-      //       roomersQuantity: `2 Huespedes`,
-      //       unitPrice: `903.00`,
-      //       discount: `0.00`,
-      //       total: `903.00`,
-      //     },
-      //     {
-      //       quantity: 1,
-      //       roomDescription: `Habitacion Familiar`,
-      //       roomersQuantity: `2 Huespedes`,
-      //       unitPrice: `903.00`,
-      //       discount: `0.00`,
-      //       total: `903.00`,
-      //     },
-      //     {
-      //       quantity: 1,
-      //       roomDescription: `Habitacion Familiar`,
-      //       roomersQuantity: `2 Huespedes`,
-      //       unitPrice: `903.00`,
-      //       discount: `0.00`,
-      //       total: `903.00`,
-      //     },
-      //     {
-      //       quantity: 1,
-      //       roomDescription: `Habitacion Familiar`,
-      //       roomersQuantity: `2 Huespedes`,
-      //       unitPrice: `903.00`,
-      //       discount: `0.00`,
-      //       total: `903.00`,
-      //     },
-      //   ],
-      //   invoiceSubTotal: `1806.72`,
-      //   invoiceExentAmount: `0.00`,
-      //   invoiceExoneratedAmount: `0.00`,
-      //   invoiceTaxableAmount15: `1806.72`,
-      //   invoiceTaxableAmount18: `0.00`,
-      //   invoiceTaxAmount15: `271.01`,
-      //   invoiceTaxAmount18: `0.00`,
-      //   invoiceTaxAmount4: `72.27`,
-      //   invoiceTotal: `2150.00`,
-      //   totalWrittenValue: `Dos Mil Ciento Cicuenta y Uno Exactos`,
-      //   payments: [
-      //     { paymentDescription: `EFECTIVO`, paymentAmount: `2200.00` },
-      //     { paymentDescription: `SU CAMBIO ES`, paymentAmount: `50.00` },
-      //   ],
-      // });
 
       const result = template(data);
 
@@ -539,5 +387,105 @@ export class BillingService {
     return invoice.permanences[0].reservation.customer.id
       .toFixed(0)
       .padStart(6, `0`);
+  }
+
+  private initBill(fiscalInformation: FiscalInformation) {
+    const invoice: Billing = new Billing({
+      fiscalInformation,
+      cai: fiscalInformation.cai,
+      invoiceNumber: fiscalInformation.currentNumber,
+    });
+
+    invoice.permanences = [];
+    invoice.payments = [];
+    return invoice;
+  }
+
+  private async findPermanencesByDto(
+    createBillingDto: CreateBillingDto,
+    invoice: Billing,
+  ) {
+    for (const permanenceId of createBillingDto.permanencesId) {
+      const permanence = await this.permanenceService.get(permanenceId);
+      this.validatePermanence(invoice, permanence);
+      invoice.permanences = [...invoice.permanences, permanence];
+    }
+  }
+
+  private validatePermanence(invoice: Billing, permanence: Permanence) {
+    this.validateCustomerFromPermanence(invoice, permanence);
+    this.validatePermanenceAlreadyInvoiced(permanence);
+  }
+
+  private validatePermanenceAlreadyInvoiced(permanence: Permanence) {
+    if (permanence.invoice) {
+      throw new ConflictException(
+        `La permanencia ${permanence.id} ya cuenta con una factura.`,
+      );
+    }
+  }
+
+  private validateCustomerFromPermanence(
+    invoice: Billing,
+    permanence: Permanence,
+  ) {
+    if (invoice.permanences.filter((p) => p.id !== permanence.id).length > 0) {
+      throw new ConflictException(
+        `Las permanencias deben de pertenecer el mismo cliente.`,
+      );
+    }
+  }
+
+  private async createBillingTotals(
+    invoice?: Billing,
+    manager?: EntityManager,
+  ) {
+    const total = await this.totalService.create(
+      {
+        permanences: invoice.permanences,
+      },
+      manager,
+    );
+
+    invoice.total = total;
+    return total;
+  }
+
+  private validatePaymentsTotal(
+    createBillingDto: CreateBillingDto,
+    total: Total,
+  ) {
+    const paymentsTotal = createBillingDto.payments.reduce(
+      (acc, act) => acc + +act.amount,
+      0,
+    );
+
+    if (total.total > paymentsTotal) {
+      throw new ConflictException(
+        `La cantidad de pagos no coincide con al cantidad total de la factura. Total factura: ${total.total} - Total pagos: ${paymentsTotal}.`,
+      );
+    }
+  }
+
+  private async createBillingPayments(
+    createBillingDto: CreateBillingDto,
+    manager,
+    invoice: Billing,
+  ) {
+    for (const paymentDto of createBillingDto.payments) {
+      const payment = await this.paymentService.create(paymentDto, manager);
+
+      invoice.payments = [...invoice.payments, payment];
+    }
+  }
+
+  private async updateCurrentNumberAndRangeFiscalInformation(
+    fiscalInformation: FiscalInformation,
+    manager,
+  ) {
+    fiscalInformation.currentNumber += 1;
+    fiscalInformation.range -= 1;
+
+    await manager.save(fiscalInformation);
   }
 }

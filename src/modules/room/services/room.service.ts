@@ -6,7 +6,7 @@ import { RoomRepository } from '../repositories/room.repository';
 import { RoomTypeRepository } from '../repositories/room.types.repository';
 import { UpdateRoomDto } from '../dto/update-room-input';
 import { RoomStatusRepository } from '../repositories/room.status.repository';
-import { getRepository, Not } from 'typeorm';
+import { getRepository, Not, EntityManager } from 'typeorm';
 import { getManager } from 'typeorm';
 @Injectable()
 export class RoomService {
@@ -83,12 +83,16 @@ export class RoomService {
     await this.roomRepository.update(id, room);
   }
 
-  async setRoomAsTaken(room: Room): Promise<void> {
+  async setRoomStatus(
+    room: Room,
+    status: string,
+    manager?: EntityManager,
+  ): Promise<void> {
     room.status = await this.roomStatusRepository.findOne({
-      description: `Ocupada`,
+      description: status,
     });
 
-    await room.save();
+    manager ? await manager.save(room) : await room.save();
   }
 
   async getAvailableRooms(filter: AvailableRoomsFilterDto): Promise<Room[]> {
