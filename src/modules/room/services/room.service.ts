@@ -1,3 +1,4 @@
+import { RoomType } from './../entities/room.types.entity';
 import { AvailableRoomsFilterDto } from './../dto/available-rooms-filter-input';
 import { CreateRoomDto } from '../dto/create-room-input';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -108,9 +109,13 @@ export class RoomService {
 
     const availableRooms = this.roomRepository.manager.connection
       .createQueryBuilder(Room, 'r')
+      .innerJoinAndSelect(`r.type`, `roomTypes`)
+      .innerJoinAndSelect(`r.status`, `roomStatus`)
       .where(`r.id NOT IN (${reservationsOnDateRange.getQuery()})`)
       .setParameters(filter);
 
-    return await availableRooms.getMany();
+    const rooms = await availableRooms.getMany();
+
+    return rooms;
   }
 }
