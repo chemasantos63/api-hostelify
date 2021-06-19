@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { Billing } from './../../billing/entities/billing.entity';
 import { Payment } from './../../payment/entities/payment.entity';
+import { type } from 'os';
 
 @Entity(`balances`)
 export class Balance extends BaseEntity {
@@ -40,6 +41,9 @@ export class Balance extends BaseEntity {
   })
   @JoinColumn({ name: `user_id` })
   user: User;
+
+  @Column({ type: `timestamp`, nullable: true })
+  closingDate: Date;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;
