@@ -16,6 +16,7 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Permanence } from '../permanence/entities/permanence.entity';
+import { Balance } from '../balance/entities/balance.entity';
 @Entity(`users`)
 @Unique(['username'])
 export class User extends BaseEntity {
@@ -53,6 +54,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Permanence, (permanence) => permanence.userCheckOut)
   permanencesOut: Permanence[];
+
+  @OneToMany(() => Balance, (balance) => balance.user)
+  balances: Balance[];
 
   @Column({ type: `varchar`, default: `ACTIVE`, length: 8 })
   status: string;

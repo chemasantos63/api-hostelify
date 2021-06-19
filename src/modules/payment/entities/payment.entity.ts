@@ -1,5 +1,4 @@
-import { Billing } from './../../billing/entities/billing.entity';
-import { PaymentMethod } from './../../payment-method/entities/payment-method.entity';
+import { Balance } from './../../balance/entities/balance.entity';
 import {
   BaseEntity,
   Column,
@@ -7,10 +6,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Billing } from './../../billing/entities/billing.entity';
+import { PaymentMethod } from './../../payment-method/entities/payment-method.entity';
 
 @Entity(`payment`)
 export class Payment extends BaseEntity {
@@ -29,6 +29,13 @@ export class Payment extends BaseEntity {
 
   @Column({ type: `decimal`, nullable: false, default: 0 })
   amount: number;
+
+  @ManyToOne((type) => Balance, {
+    cascade: true,
+    nullable: false,
+  })
+  @JoinColumn({ name: `balance_id` })
+  balance: Balance;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

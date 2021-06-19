@@ -18,6 +18,7 @@ import { PaymentMethodModule } from './modules/payment-method/payment-method.mod
 import { PaymentModule } from './modules/payment/payment.module';
 import { TotalModule } from './modules/total/total.module';
 import { FiscalInformationModule } from './modules/fiscal-information/fiscal-information.module';
+import { BalanceModule } from './modules/balance/balance.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { FiscalInformationModule } from './modules/fiscal-information/fiscal-inf
     PaymentMethodModule,
     TotalModule,
     FiscalInformationModule,
+    BalanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

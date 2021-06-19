@@ -1,3 +1,4 @@
+import { Balance } from './../../balance/entities/balance.entity';
 import { Invoice } from './invoice.entity';
 import { FiscalInformation } from './../../fiscal-information/entities/fiscal-information.entity';
 import { Total } from './../../total/entities/total.entity';
@@ -62,6 +63,13 @@ export class Billing extends BaseEntity {
 
   @Column({ type: `varchar`, nullable: false })
   condition: string;
+
+  @ManyToOne((type) => Balance, {
+    cascade: true,
+    nullable: false,
+  })
+  @JoinColumn({ name: `balance_id` })
+  balance: Balance;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;
