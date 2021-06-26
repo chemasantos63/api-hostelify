@@ -1,3 +1,4 @@
+import { BalanceModule } from './../balance/balance.module';
 import { RoomModule } from './../room/room.module';
 import { AuthModule } from './../auth/auth.module';
 import { PaymentModule } from './../payment/payment.module';
@@ -19,6 +20,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TotalModule,
     PaymentModule,
     RoomModule,
+    BalanceModule,
   ],
   controllers: [BillingController],
   providers: [BillingService],

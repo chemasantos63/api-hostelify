@@ -5,4 +5,6 @@ export class CreatePaymentDto {
   paymentMethodId: number;
   @IsNumber()
   amount: number;
+  @IsNumber()
+  balance_id: number;
 }

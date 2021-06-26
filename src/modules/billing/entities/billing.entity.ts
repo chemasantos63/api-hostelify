@@ -64,10 +64,7 @@ export class Billing extends BaseEntity {
   @Column({ type: `varchar`, nullable: false })
   condition: string;
 
-  @ManyToOne((type) => Balance, {
-    cascade: true,
-    nullable: false,
-  })
+  @ManyToOne((type) => Balance, (balance) => balance.invoices)
   @JoinColumn({ name: `balance_id` })
   balance: Balance;
 

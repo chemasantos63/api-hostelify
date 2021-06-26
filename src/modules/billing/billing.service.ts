@@ -1,3 +1,4 @@
+import { BalanceService } from './../balance/balance.service';
 import { RoomService } from './../room/services/room.service';
 import { InvoiceDetail } from './entities/invoice-detail.entity';
 import { InvoicePaymentDetail } from './entities/invoice-payment-detail.entity';
@@ -37,6 +38,7 @@ import * as dayjs from 'dayjs';
 import { launch } from 'puppeteer';
 import { Reservation } from '../reservation/entities/reservation.entity';
 import { Room } from '../room/entities/room.entity';
+import { Balance } from '../balance/entities/balance.entity';
 
 @Injectable()
 export class BillingService {
@@ -52,11 +54,15 @@ export class BillingService {
     private readonly connection: Connection,
     private readonly billingRepository: BillingRepository,
     private readonly roomService: RoomService,
+    private readonly balanceService: BalanceService,
   ) {
     writtenNumber.defaults.lang = 'es';
   }
 
-  async create(createBillingDto: CreateBillingDto): Promise<Billing> {
+  async create(
+    createBillingDto: CreateBillingDto,
+    user: User,
+  ): Promise<Billing> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
@@ -85,6 +91,16 @@ export class BillingService {
       await this.createBillingTotals(invoice, manager);
 
       this.validatePaymentsTotal(createBillingDto, invoice.total);
+
+      const balances = await await this.balanceService.findByUser(user);
+
+      if (!balances) {
+        throw new NotFoundException(
+          `El usuario ${user.username} no tiene cierres activos.`,
+        );
+      }
+
+      invoice.balance = balances[0];
 
       await this.createBillingPayments(createBillingDto, manager, invoice);
 
@@ -469,11 +485,15 @@ export class BillingService {
 
   private async createBillingPayments(
     createBillingDto: CreateBillingDto,
-    manager,
+    manager: EntityManager,
     invoice: Billing,
   ) {
     for (const paymentDto of createBillingDto.payments) {
-      const payment = await this.paymentService.create(paymentDto, manager);
+      const payment = await this.paymentService.create(
+        paymentDto,
+        invoice.balance,
+        manager,
+      );
 
       invoice.payments = [...invoice.payments, payment];
     }

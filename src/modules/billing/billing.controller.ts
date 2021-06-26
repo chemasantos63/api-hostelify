@@ -20,13 +20,16 @@ import { UpdateBillingDto } from './dto/update-billing.dto';
 import { Billing } from './entities/billing.entity';
 
 @Controller('billing')
-// @UseGuards(AuthGuard())
+@UseGuards(AuthGuard())
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
   @Post()
-  async create(@Body() createBillingDto: CreateBillingDto): Promise<Billing> {
-    return await this.billingService.create(createBillingDto);
+  async create(
+    @Body() createBillingDto: CreateBillingDto,
+    @GetUser() user: User,
+  ): Promise<Billing> {
+    return await this.billingService.create(createBillingDto, user);
   }
 
   @Get()

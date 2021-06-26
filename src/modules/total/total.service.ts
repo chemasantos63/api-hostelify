@@ -64,8 +64,7 @@ export class TotalService {
 
   private roundNumber(nmbr: number): number {
     const bigNumberConvert = new BigNumber(nmbr);
-   
+
     return +bigNumberConvert.precision(12, BigNumber.ROUND_HALF_UP).toFixed(1);
   }
-  
 }

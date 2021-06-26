@@ -1,3 +1,4 @@
+import { BalanceModule } from './../balance/balance.module';
 import { PaymentMethodModule } from './../payment-method/payment-method.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,6 +12,7 @@ import { PaymentService } from './payment.service';
     AuthModule,
     TypeOrmModule.forFeature([PaymentRepository]),
     PaymentMethodModule,
+    BalanceModule,
   ],
   controllers: [PaymentController],
   providers: [PaymentService],

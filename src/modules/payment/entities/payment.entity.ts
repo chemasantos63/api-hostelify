@@ -30,10 +30,7 @@ export class Payment extends BaseEntity {
   @Column({ type: `decimal`, nullable: false, default: 0 })
   amount: number;
 
-  @ManyToOne((type) => Balance, {
-    cascade: true,
-    nullable: false,
-  })
+  @ManyToOne((type) => Balance, (balance) => balance.payments)
   @JoinColumn({ name: `balance_id` })
   balance: Balance;
 

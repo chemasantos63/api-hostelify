@@ -1,3 +1,6 @@
+import { Balance } from './../balance/entities/balance.entity';
+import { BalanceService } from './../balance/balance.service';
+import { BalanceRepository } from './../balance/balance.repository';
 import { PaymentMethodService } from './../payment-method/payment-method.service';
 import { PaymentRepository } from './payment.repository';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
@@ -5,6 +8,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Payment } from './entities/payment.entity';
 import { EntityManager } from 'typeorm';
+import { User } from '../user/user.entity';
 
 @Injectable()
 export class PaymentService {
@@ -13,10 +17,12 @@ export class PaymentService {
   constructor(
     private readonly paymentRepository: PaymentRepository,
     private readonly paymentMethodService: PaymentMethodService,
+    private readonly balanceService: BalanceService,
   ) {}
 
   async create(
     createPaymentDto: CreatePaymentDto,
+    balance?: Balance,
     manager?: EntityManager,
   ): Promise<Payment> {
     this.logger.verbose(
@@ -35,6 +41,10 @@ export class PaymentService {
     }
 
     payment.paymentMethod = paymentMethod;
+
+    if (balance) {
+      payment.balance = balance;
+    }
 
     return manager ? await manager.save(payment) : await payment.save();
   }
