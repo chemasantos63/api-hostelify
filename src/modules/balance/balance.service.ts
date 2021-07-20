@@ -1,9 +1,15 @@
 import { BalanceRepository } from './balance.repository';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateBalanceDto } from './dto/create-balance.dto';
 import { UpdateBalanceDto } from './dto/update-balance.dto';
 import { Balance } from './entities/balance.entity';
 import { User } from '../user/user.entity';
+import { BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class BalanceService {
@@ -52,11 +58,27 @@ export class BalanceService {
     id: number,
     updateBalanceDto: UpdateBalanceDto,
   ): Promise<Balance> {
-    const { cashTotal, cardTotal } = updateBalanceDto;
+    const { cashTotal, debitTotal, ignoreNotSameCashAmount } = updateBalanceDto;
     const balance = await this.findOne(id);
 
+    const cashPayments = balance.payments.filter(
+      (p) => p.paymentMethod.isCash === true,
+    );
+
+    const totalInCashPayments = cashPayments.reduce(
+      (acc, act) => acc + +act.amount,
+      0,
+    );
+
+    if (!ignoreNotSameCashAmount && totalInCashPayments !== cashTotal) {
+      throw new NotAcceptableException(
+        undefined,
+        `El monto cobrado en efectivo no es igual que el monto reportado en balance.`,
+      );
+    }
+
     balance.cashTotal = cashTotal;
-    balance.cardTotal = cardTotal;
+    balance.debitTotal = debitTotal;
     balance.closingDate = new Date();
 
     return balance.save();

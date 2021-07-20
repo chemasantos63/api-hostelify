@@ -29,6 +29,9 @@ export class PaymentMethod extends BaseEntity {
   @Column({ type: `varchar`, nullable: false, default: 'active' })
   status: string;
 
+  @Column({ type: `boolean`, nullable: false, default: false })
+  isCash: boolean;
+
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;
 

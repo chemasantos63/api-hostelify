@@ -32,7 +32,7 @@ export class Balance extends BaseEntity {
   cashTotal: number;
 
   @Column({ type: `decimal`, nullable: true, default: 0 })
-  cardTotal: number;
+  debitTotal: number;
 
   @ManyToOne((type) => User, {
     cascade: true,

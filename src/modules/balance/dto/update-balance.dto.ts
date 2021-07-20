@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsNumber } from 'class-validator';
+import { IsBoolean, IsNumber } from 'class-validator';
 import { CreateBalanceDto } from './create-balance.dto';
 
 export class UpdateBalanceDto extends PartialType(CreateBalanceDto) {
@@ -7,5 +7,8 @@ export class UpdateBalanceDto extends PartialType(CreateBalanceDto) {
   cashTotal: number;
 
   @IsNumber()
-  cardTotal: number;
+  debitTotal: number;
+
+  @IsBoolean()
+  ignoreNotSameCashAmount: boolean;
 }
