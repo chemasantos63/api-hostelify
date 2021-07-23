@@ -1,4 +1,3 @@
-import { Guest } from './../../permanence/entities/guest.entity';
 import {
   BaseEntity,
   Column,
@@ -13,7 +12,7 @@ import {
 } from 'typeorm';
 import { Customer } from '../../customer/entities/customer.entity';
 import { Room } from '../../room/entities/room.entity';
-import { truncate } from 'fs';
+import { Guest } from './../../permanence/entities/guest.entity';
 
 @Entity(`reservations`)
 export class Reservation extends BaseEntity {

@@ -5,7 +5,6 @@ export class CreateReservationDto {
   @IsDate()
   fromDate: Date;
 
-  @IsDate()
   toDate: Date;
 
   @IsNotEmpty()
