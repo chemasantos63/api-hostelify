@@ -23,7 +23,7 @@ export class Reservation extends BaseEntity {
   @Column({ type: `date`, nullable: false })
   fromDate: Date;
 
-  @Column({ type: `date`, nullable: false })
+  @Column({ type: `date`, nullable: true })
   toDate: Date;
 
   @ManyToOne(() => Customer, {
