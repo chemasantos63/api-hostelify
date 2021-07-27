@@ -1,3 +1,4 @@
+import { CreateProductBillDto } from './../billing/dto/create-product-bill-dto';
 import { PermanenceService } from './../permanence/services/permanence.service';
 import { Injectable } from '@nestjs/common';
 import { CreateTotalDto } from './dto/create-total.dto';
@@ -15,6 +16,7 @@ export class TotalService {
     createTotalDto: CreateTotalDto,
     manager?: EntityManager,
     simulate?: boolean,
+    createProductBillDto?: CreateProductBillDto,
   ): Promise<Total> {
     const total = new Total();
 
@@ -26,6 +28,14 @@ export class TotalService {
 
         total.subtotal += +totalToPay;
       }
+    }
+
+    for (const product of createTotalDto.products) {
+      const { productQuantity } = createProductBillDto.products.find(
+        (p) => p.productId === product.id,
+      );
+
+      total.subtotal += product.price * productQuantity;
     }
 
     total.taxedAmount = this.roundNumber(+total.subtotal);

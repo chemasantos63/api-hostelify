@@ -1,16 +1,19 @@
 import { User } from '../../user/user.entity';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('products')
-export class Product {
+@Unique(['code'])
+export class Product extends BaseEntity {
   @PrimaryGeneratedColumn(`increment`)
   id: number;
 
@@ -28,6 +31,9 @@ export class Product {
 
   @Column({ type: `decimal`, nullable: false, default: 0 })
   stock: number;
+
+  @Column({ type: `varchar`, nullable: false, default: 'active' })
+  status: string;
 
   @ManyToOne((type) => User, {
     cascade: true,
@@ -50,4 +56,9 @@ export class Product {
 
   @UpdateDateColumn({ type: `timestamp`, name: `updated_at` })
   updatedAt: Date;
+
+  constructor(partial: Partial<Product>) {
+    super();
+    Object.assign(this, partial);
+  }
 }

@@ -1,44 +1,41 @@
-import { BalanceService } from './../balance/balance.service';
-import { RoomService } from './../room/services/room.service';
-import { InvoiceDetail } from './entities/invoice-detail.entity';
-import { InvoicePaymentDetail } from './entities/invoice-payment-detail.entity';
-import { Invoice } from './entities/invoice.entity';
-import {
-  InvoiceBillingDetailDTO,
-  InvoiceBillingDTO,
-} from './dto/invoiceBillingDTO';
-import { BillingRepository } from './billing.repository';
-import { Payment } from './../payment/entities/payment.entity';
-import { PaymentService } from './../payment/payment.service';
-import { TotalService } from './../total/total.service';
-import { PermanenceService } from './../permanence/services/permanence.service';
-import { Billing } from './entities/billing.entity';
+import { CustomerService } from './../customer/customer.service';
+import { Product } from './../product/entities/product.entity';
+import { ProductService } from './../product/product.service';
+import { CreateProductBillDto } from './dto/create-product-bill-dto';
 import {
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateBillingDto } from './dto/create-billing.dto';
-import { UpdateBillingDto } from './dto/update-billing.dto';
-import { FiscalInformationService } from '../fiscal-information/fiscal-information.service';
-import { Connection, EntityManager } from 'typeorm';
-import { query } from 'express';
-import { FiscalInformation } from '../fiscal-information/entities/fiscal-information.entity';
-import { Total } from '../total/entities/total.entity';
-import { Permanence } from '../permanence/entities/permanence.entity';
-import { User } from '../user/user.entity';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as utils from 'util';
-import * as hb from 'handlebars';
-import * as writtenNumber from 'written-number';
 import * as dayjs from 'dayjs';
+import * as fs from 'fs';
+import * as hb from 'handlebars';
+import * as path from 'path';
 import { launch } from 'puppeteer';
+import { Connection, EntityManager } from 'typeorm';
+import * as utils from 'util';
+import * as writtenNumber from 'written-number';
+import { FiscalInformation } from '../fiscal-information/entities/fiscal-information.entity';
+import { FiscalInformationService } from '../fiscal-information/fiscal-information.service';
+import { Permanence } from '../permanence/entities/permanence.entity';
 import { Reservation } from '../reservation/entities/reservation.entity';
 import { Room } from '../room/entities/room.entity';
-import { Balance } from '../balance/entities/balance.entity';
+import { Total } from '../total/entities/total.entity';
+import { User } from '../user/user.entity';
+import { BalanceService } from './../balance/balance.service';
+import { PaymentService } from './../payment/payment.service';
+import { PermanenceService } from './../permanence/services/permanence.service';
+import { RoomService } from './../room/services/room.service';
+import { TotalService } from './../total/total.service';
+import { BillingRepository } from './billing.repository';
+import { CreateBillingDto } from './dto/create-billing.dto';
+import { UpdateBillingDto } from './dto/update-billing.dto';
+import { Billing } from './entities/billing.entity';
+import { InvoiceDetail } from './entities/invoice-detail.entity';
+import { InvoicePaymentDetail } from './entities/invoice-payment-detail.entity';
+import { Invoice } from './entities/invoice.entity';
+import { Customer } from '../customer/entities/customer.entity';
 
 @Injectable()
 export class BillingService {
@@ -55,6 +52,8 @@ export class BillingService {
     private readonly billingRepository: BillingRepository,
     private readonly roomService: RoomService,
     private readonly balanceService: BalanceService,
+    private readonly productService: ProductService,
+    private readonly customerService: CustomerService,
   ) {
     writtenNumber.defaults.lang = 'es';
   }
@@ -104,7 +103,7 @@ export class BillingService {
 
       await this.createBillingPayments(createBillingDto, manager, invoice);
 
-      const invoiceReport = this.parseInvoiceDataToReport(invoice);
+      const invoiceReport = await this.parseInvoiceDataToReport(invoice, false);
 
       invoiceReport.detail = await manager.save(invoiceReport.detail);
       invoiceReport.payments = await manager.save(invoiceReport.payments);
@@ -138,6 +137,87 @@ export class BillingService {
       throw error;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async createProductBill(
+    createProductBillDto: CreateProductBillDto,
+    user: User,
+  ) {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    const { manager } = queryRunner;
+
+    try {
+      this.logger.verbose(
+        `creating invoice for products ids ${JSON.stringify(
+          createProductBillDto.products,
+        )} with this DTO: ${JSON.stringify(createProductBillDto)}`,
+      );
+
+      const fiscalInformation = await this.fiscalInformationService.findOneActive();
+
+      this.logger.verbose(
+        `Found fiscal information: ${JSON.stringify(fiscalInformation)}`,
+      );
+
+      const invoice: Billing = this.initBill(fiscalInformation);
+
+      invoice.condition = createProductBillDto.condition;
+
+      await this.createBillingTotals(
+        invoice,
+        manager,
+        await this.getProductsFromDto(createProductBillDto),
+        createProductBillDto,
+      );
+
+      this.validatePaymentsTotal(createProductBillDto, invoice.total);
+
+      const balances = await await this.balanceService.findByUser(user);
+
+      if (!balances) {
+        throw new NotFoundException(
+          `El usuario ${user.username} no tiene cierres activos.`,
+        );
+      }
+
+      invoice.balance = balances[0];
+
+      await this.createBillingPayments(createProductBillDto, manager, invoice);
+
+      const customer = await this.customerService.get(
+        createProductBillDto.customerId,
+      );
+
+      const invoiceReport = await this.parseInvoiceDataToReport(
+        invoice,
+        true,
+        createProductBillDto,
+        customer,
+      );
+
+      invoiceReport.detail = await manager.save(invoiceReport.detail);
+      invoiceReport.payments = await manager.save(invoiceReport.payments);
+
+      invoice.invoiceReport = await manager.save(invoiceReport);
+
+      await manager.save(invoice);
+
+      this.logger.verbose(`Invoice Object: ${JSON.stringify(invoice)}`);
+
+      await this.updateCurrentNumberAndRangeFiscalInformation(
+        fiscalInformation,
+        manager,
+      );
+
+      await queryRunner.commitTransaction();
+
+      return invoice;
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -292,11 +372,24 @@ export class BillingService {
     }
   }
 
-  private parseInvoiceDataToReport(invoice: Billing): Invoice {
+  private async parseInvoiceDataToReport(
+    invoice: Billing,
+    isProductBill: boolean,
+    createProductBillDto?: CreateProductBillDto,
+    customer?: Customer,
+  ): Promise<Invoice> {
     const invoiceReport = new Invoice({
-      customerCode: this.padCustomerCodeWithZeros(invoice),
-      customerIdentification: invoice.permanences[0].customer.documentNumber,
-      customerName: this.getCustomerNameFromInvoice(invoice),
+      customerCode: this.padCustomerCodeWithZeros(
+        createProductBillDto
+          ? createProductBillDto.customerId
+          : invoice.permanences[0].customer.id,
+      ),
+      customerIdentification: createProductBillDto
+        ? customer.documentNumber
+        : invoice.permanences[0].customer.documentNumber,
+      customerName: createProductBillDto
+        ? `${customer.name} ${customer.lastname}`
+        : this.getCustomerNameFromInvoice(invoice),
       invoiceCai: invoice.fiscalInformation.cai,
       invoiceCondition: invoice.condition,
       invoiceDateAndTime: dayjs(invoice.createdAt).format(
@@ -332,10 +425,18 @@ export class BillingService {
       ];
     });
 
-    const invoiceDetail = this.getInvoiceReportDetail(
-      invoice,
-      invoice.permanences[0].reservation,
-    );
+    let invoiceDetail: Array<Partial<InvoiceDetail>>;
+
+    if (isProductBill) {
+      invoiceDetail = await this.getProductInvoiceReportDetail(
+        createProductBillDto,
+      );
+    } else {
+      invoiceDetail = this.getInvoiceReportDetail(
+        invoice,
+        invoice.permanences[0].reservation,
+      );
+    }
 
     invoiceDetail.forEach((d) => {
       invoiceReport.detail = [...invoiceReport.detail, new InvoiceDetail(d)];
@@ -399,10 +500,8 @@ export class BillingService {
     return `${invoice.permanences[0].customer.name} ${invoice.permanences[0].customer.lastname}`;
   }
 
-  private padCustomerCodeWithZeros(invoice: Billing): string {
-    return invoice.permanences[0].reservation.customer.id
-      .toFixed(0)
-      .padStart(6, `0`);
+  private padCustomerCodeWithZeros(customerId: number): string {
+    return customerId.toFixed(0).padStart(6, `0`);
   }
 
   private initBill(fiscalInformation: FiscalInformation) {
@@ -455,12 +554,17 @@ export class BillingService {
   private async createBillingTotals(
     invoice?: Billing,
     manager?: EntityManager,
+    products?: Array<Product>,
+    createProductBillDto?: CreateProductBillDto,
   ) {
     const total = await this.totalService.create(
       {
         permanences: invoice.permanences,
+        products,
       },
       manager,
+      false,
+      createProductBillDto,
     );
 
     invoice.total = total;
@@ -468,7 +572,7 @@ export class BillingService {
   }
 
   private validatePaymentsTotal(
-    createBillingDto: CreateBillingDto,
+    createBillingDto: CreateBillingDto | CreateProductBillDto,
     total: Total,
   ) {
     const paymentsTotal = createBillingDto.payments.reduce(
@@ -484,7 +588,7 @@ export class BillingService {
   }
 
   private async createBillingPayments(
-    createBillingDto: CreateBillingDto,
+    createBillingDto: CreateBillingDto | CreateProductBillDto,
     manager: EntityManager,
     invoice: Billing,
   ) {
@@ -507,5 +611,50 @@ export class BillingService {
     fiscalInformation.range -= 1;
 
     await manager.save(fiscalInformation);
+  }
+
+  private async getProductInvoiceReportDetail(
+    createProductBillDto: CreateProductBillDto,
+  ): Promise<Array<Partial<InvoiceDetail>>> {
+    let invoiceDetails = new Array<Partial<InvoiceDetail>>();
+
+    const products = await this.getProductsFromDto(createProductBillDto);
+
+    for (const product of products) {
+      const { description, price } = product;
+
+      const productDetail: Partial<InvoiceDetail> = {
+        description,
+        product,
+        unitPrice: price.toString(),
+        total: (
+          price *
+          createProductBillDto.products.find((p) => p.productId === product.id)
+            .productQuantity
+        ).toString(),
+        discount: `0.00`,
+        roomersQuantity: ``,
+        quantity: createProductBillDto.products
+          .find((p) => p.productId === product.id)
+          .productQuantity.toString(),
+      };
+
+      invoiceDetails = [...invoiceDetails, productDetail];
+    }
+
+    return invoiceDetails;
+  }
+
+  private async getProductsFromDto(
+    createProductBillDto: CreateProductBillDto,
+  ): Promise<Array<Product>> {
+    let products = new Array<Product>();
+
+    for (const p of createProductBillDto.products) {
+      const product = await this.productService.findOne(p.productId);
+      products = [...products, product];
+    }
+
+    return products;
   }
 }

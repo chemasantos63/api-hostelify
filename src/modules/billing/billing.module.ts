@@ -1,3 +1,5 @@
+import { CustomerModule } from './../customer/customer.module';
+import { ProductModule } from './../product/product.module';
 import { BalanceModule } from './../balance/balance.module';
 import { RoomModule } from './../room/room.module';
 import { AuthModule } from './../auth/auth.module';
@@ -21,6 +23,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     PaymentModule,
     RoomModule,
     BalanceModule,
+    ProductModule,
+    CustomerModule,
   ],
   controllers: [BillingController],
   providers: [BillingService],

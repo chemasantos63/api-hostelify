@@ -1,3 +1,4 @@
+import { Product } from './../../product/entities/product.entity';
 import {
   BaseEntity,
   Column,
@@ -35,6 +36,14 @@ export class InvoiceDetail extends BaseEntity {
 
   @ManyToOne(() => Invoice, (invoice) => invoice.detail)
   invoice: Invoice;
+
+  @ManyToOne((type) => Product, {
+    cascade: true,
+    nullable: true,
+    eager: true,
+  })
+  @JoinColumn({ name: `product_id` })
+  product: Product;
 
   @CreateDateColumn({ type: `timestamp`, name: `created_at` })
   createdAt: Date;

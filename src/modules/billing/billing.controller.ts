@@ -1,3 +1,4 @@
+import { CreateProductBillDto } from './dto/create-product-bill-dto';
 import {
   Body,
   Controller,
@@ -20,7 +21,7 @@ import { UpdateBillingDto } from './dto/update-billing.dto';
 import { Billing } from './entities/billing.entity';
 
 @Controller('billing')
-@UseGuards(AuthGuard())
+// @UseGuards(AuthGuard())
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
@@ -30,6 +31,14 @@ export class BillingController {
     @GetUser() user: User,
   ): Promise<Billing> {
     return await this.billingService.create(createBillingDto, user);
+  }
+
+  @Post('products')
+  async createProducstBill(
+    @Body() createBillingDto: CreateProductBillDto,
+    @GetUser() user: User,
+  ): Promise<Billing> {
+    return await this.billingService.createProductBill(createBillingDto, user);
   }
 
   @Get()
