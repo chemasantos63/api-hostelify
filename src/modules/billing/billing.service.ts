@@ -213,6 +213,24 @@ export class BillingService {
         manager,
       );
 
+      const products = await this.getProductsFromDto(createProductBillDto);
+
+      for (const product of products) {
+        const quantity = createProductBillDto.products.find(
+          (p) => p.productId === product.id,
+        ).productQuantity;
+
+        if (product.stock - quantity < 0) {
+          throw new ConflictException(
+            `No hay inventario suficiente para facturar por favor revise`,
+          );
+        }
+
+        product.stock -= quantity;
+
+        await manager.save(product);
+      }
+
       await queryRunner.commitTransaction();
 
       return invoice;
