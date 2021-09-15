@@ -105,6 +105,8 @@ export class RoomService {
       .where('rs.fromDate >= :fromDate AND rs.toDate <= :toDate ')
       .orWhere('rs.toDate > :fromDate AND rs.toDate < :toDate')
       .orWhere('rs.fromDate > :fromDate AND rs.fromDate < :toDate')
+      .orWhere('rs.fromDate >= :fromDate AND rs.toDate IS NULL')
+      .orWhere(`rs.status = 'active'` )
       .setParameters(filter);
 
     const availableRooms = this.roomRepository.manager.connection
